@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.2.0",
+	"VersionName": "1.2.1",
 	"FriendlyName": "星移",
 	"Description": "寓意：斗转星移。把任意关卡当作素材板，在面板里浏览关卡中的 Actor，直接点选拖拽即可移入当前关卡。",
 	"Category": "Editor",

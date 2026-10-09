@@ -116,14 +116,6 @@ public:
 	UPROPERTY(config, EditAnywhere, Category = "显示", meta = (DisplayName = "性能模式（关闭 Lumen 等高级特性）"))
 	bool bPerformanceMode = false;
 
-	/**
-	 * 打开 World Partition（开放世界）关卡时，是否强制把它的单元全部加载出来。
-	 * 关掉流送后 WP 会把所有单元当成已加载，面板里才看得到东西；
-	 * 超大开放世界可能会卡几秒，卡就关掉这项（面板会改为提示）。
-	 */
-	UPROPERTY(config, EditAnywhere, Category = "显示", meta = (DisplayName = "World Partition 关卡自动加载全部单元"))
-	bool bLoadWorldPartitionCells = true;
-
 	// ------------------------------------------------------------------
 	// 记录维护
 	// ------------------------------------------------------------------

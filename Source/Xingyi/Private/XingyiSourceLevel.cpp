@@ -13,8 +13,6 @@
 #include "Components/PrimitiveComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/SkyLightComponent.h"
-#include "WorldPartition/WorldPartition.h"
-#include "HAL/PlatformTime.h"
 #include "Misc/ScopedSlowTask.h"
 
 #define LOCTEXT_NAMESPACE "Xingyi"
@@ -36,9 +34,6 @@ namespace
 
 	/** 包围盒大到「整个世界」的（物理体积、天空盒）拿它框相机等于没框，直接跳过 */
 	constexpr double MaxMeaningfulBoundsExtent = 500000.0;
-
-	/** 推模拟的最长拍数；配合时间预算一起用，两个谁先到算谁 */
-	constexpr int32 MaxPartitionLoadSteps = 240;
 }
 
 FXingyiSourceLevel::FXingyiSourceLevel(UWorld* InPreviewWorld)
@@ -202,46 +197,6 @@ int32 FXingyiSourceLevel::CountLevelLights(const UDirectionalLightComponent* Fal
 	}
 
 	return Count;
-}
-
-int32 FXingyiSourceLevel::ForcePartitionCellsLoaded(float TimeBudgetSeconds)
-{
-	if (!PreviewWorld)
-	{
-		return 0;
-	}
-
-	// 关掉流送之后，WP 会把所有单元当成「已加载」（等价于编辑器里那个 Enable Streaming 开关）
-	if (UWorldPartition* Partition = PreviewWorld->GetWorldPartition())
-	{
-		Partition->SetEnableStreaming(false);
-	}
-
-	// 单元是异步加载的，而预览世界平时不 tick，所以手动推几拍、顺手冲一下异步加载队列。
-	// 连着两拍数量不变就认为加载完了；超过时间预算就放弃，别把编辑器卡太久。
-	const double Deadline = FPlatformTime::Seconds() + FMath::Max(TimeBudgetSeconds, 0.0f);
-	int32 LastCount = -1;
-
-	for (int32 Step = 0; Step < MaxPartitionLoadSteps; ++Step)
-	{
-		PreviewWorld->Tick(LEVELTICK_All, 1.0f / 30.0f);
-		FlushAsyncLoading();
-
-		const int32 CurrentCount = CountVisibleActors();
-		if (CurrentCount > 0 && CurrentCount == LastCount)
-		{
-			break;
-		}
-		LastCount = CurrentCount;
-
-		if (FPlatformTime::Seconds() >= Deadline)
-		{
-			break;
-		}
-	}
-
-	bEmpty = CountVisibleActors() == 0;
-	return CountVisibleActors();
 }
 
 bool FXingyiSourceLevel::ComputeContentBounds(FBox& OutBounds, int32& OutActorCount) const

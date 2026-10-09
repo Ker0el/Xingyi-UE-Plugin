@@ -227,25 +227,14 @@ EXingyiLevelLoadResult FXingyiViewportClient::OpenSourceLevel(const FAssetData& 
 	UXingyiSettings* Settings = GetMutableDefault<UXingyiSettings>();
 	Settings->NoteLevelOpened(SourceLevel.GetAsset(), PaneNumber);
 
-	// World Partition 关卡的内容不在 .umap 里，而是靠流送系统按区域加载，
-	// 而预览世界不会自己跑那套流送 —— 所以这里主动把流送关掉，让 WP 把单元全部加载出来。
+	// World Partition 关卡的内容不在 .umap 里，而是靠流送系统按区域加载，而预览世界不会自己跑
+	// 那套流送 —— 所以这类关卡只能看到「始终加载」的那一部分（天空、大气、雾、光照、地形壳）。
+	// 引擎没有公开接口能绕开这一点（唯一有效的那个是全局编辑器开关，翻转会连主编辑器世界一起
+	// 全量加载，不能碰），所以这里只记一行日志，界面上的说明交给状态条和空状态卡片。
 	if (SourceLevel.IsPartitioned())
 	{
-		if (Settings->bLoadWorldPartitionCells)
-		{
-			UE_LOG(LogXingyi, Display, TEXT("星移：%s 是 World Partition 关卡，正在强制加载全部单元…"),
-				*SourceLevel.GetAsset().AssetName.ToString());
-
-			const int32 VisibleActors = SourceLevel.ForcePartitionCellsLoaded(/*TimeBudgetSeconds=*/4.0f);
-
-			UE_LOG(LogXingyi, Display, TEXT("星移：World Partition 加载结束，预览世界里可显示的 Actor 数：%d"),
-				VisibleActors);
-		}
-		else
-		{
-			UE_LOG(LogXingyi, Display, TEXT("星移：%s 是 World Partition 关卡，但设置里关掉了「自动加载全部单元」。"),
-				*SourceLevel.GetAsset().AssetName.ToString());
-		}
+		UE_LOG(LogXingyi, Display, TEXT("星移：%s 是 World Partition 关卡，只能显示「始终加载」的部分。"),
+			*SourceLevel.GetAsset().AssetName.ToString());
 	}
 
 	UE_LOG(LogXingyi, Display, TEXT("星移：关卡 %s 载入完成，可显示 Actor %d 个。"),

@@ -73,12 +73,6 @@ public:
 	bool IsEmpty() const { return bEmpty; }
 
 	/**
-	 * 把 World Partition 的单元全部逼出来（关掉流送 + 手动推几拍）。
-	 * @return 最终可显示的 Actor 数
-	 */
-	int32 ForcePartitionCellsLoaded(float TimeBudgetSeconds);
-
-	/**
 	 * 把所有可视 Actor 的包围盒并起来，用来「打开关卡后自动框住内容」。
 	 * 天空大气 / 体积云 / 高度雾这类不成线索的东西会排除掉。
 	 *
