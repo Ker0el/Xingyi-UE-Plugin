@@ -48,6 +48,14 @@ private:
 
 	ECheckBoxState GetRealtimeState() const;
 	void OnRealtimeChanged(ECheckBoxState NewState);
+
+	/** 工具条上那个「多选」开关 */
+	ECheckBoxState GetMultiSelectState() const;
+	void OnMultiSelectChanged(ECheckBoxState NewState);
+
+	/** 清空面板里的选中 */
+	FReply OnClearSelectionClicked();
+
 	bool IsGameViewOn() const;
 	FText GetPinButtonLabel() const;
 

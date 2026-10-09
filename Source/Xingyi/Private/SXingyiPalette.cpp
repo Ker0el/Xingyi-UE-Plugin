@@ -192,7 +192,7 @@ void SXingyiPalette::Construct(const FArguments& InArgs, int32 InPaneNumber)
 				.VAlign(VAlign_Center)
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("StatusHint", "左键点选面板里的 Actor 就能直接把它拖进你的关卡"))
+					.Text(this, &SXingyiPalette::GetStatusHint)
 					.ColorAndOpacity(StatusFaintColor)
 				]
 			]
@@ -246,6 +246,31 @@ FText SXingyiPalette::GetLightingLabel() const
 	}
 
 	return Status;
+}
+
+FText SXingyiPalette::GetStatusHint() const
+{
+	if (!ViewportClient.IsValid())
+	{
+		return FText::GetEmpty();
+	}
+
+	// 普通模式：和以前一样，一句话说明白就够了
+	if (!ViewportClient->IsMultiSelectMode())
+	{
+		return LOCTEXT("StatusHintNormal", "左键点 Actor 直接拖进关卡");
+	}
+
+	// 多选模式：把当前选了几个、下一步该干什么写清楚
+	const int32 SelectedCount = ViewportClient->GetPaletteSelectionCount();
+	if (SelectedCount > 0)
+	{
+		return FText::Format(
+			LOCTEXT("StatusHintMultiSelected", "已选 {0} 个 · 拖动其中一个放入 · Ctrl+点移出"),
+			FText::AsNumber(SelectedCount));
+	}
+
+	return LOCTEXT("StatusHintMultiEmpty", "多选：点 Actor 加进选中");
 }
 
 EVisibility SXingyiPalette::GetEmptyHintVisibility() const

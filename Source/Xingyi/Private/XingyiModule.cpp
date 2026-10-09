@@ -4,6 +4,7 @@
 
 #include "SXingyiPalette.h"
 #include "XingyiCommon.h"
+#include "XingyiGroupDrop.h"
 
 #include "Widgets/Docking/SDockTab.h"
 #include "Framework/Docking/TabManager.h"
@@ -34,6 +35,9 @@ FName FXingyiModule::MakePaneTabId(int32 PaneNumber)
 
 void FXingyiModule::StartupModule()
 {
+	// 成组拖拽的收尾要盯着编辑器"放置了新 Actor"的广播，模块起来就得挂上
+	XingyiGroupDrop::Register();
+
 	const IWorkspaceMenuStructure& MenuStructure = WorkspaceMenu::GetMenuStructure();
 	const TSharedRef<FWorkspaceItem> MenuGroup = MenuStructure.GetToolsCategory()->AddGroup(
 		LOCTEXT("XingyiMenuGroup", "星移"),
@@ -49,6 +53,8 @@ void FXingyiModule::StartupModule()
 
 void FXingyiModule::ShutdownModule()
 {
+	XingyiGroupDrop::Unregister();
+
 	for (int32 PaneNumber = 1; PaneNumber <= MaxPanes; ++PaneNumber)
 	{
 		UnregisterPane(PaneNumber);

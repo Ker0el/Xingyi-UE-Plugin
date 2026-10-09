@@ -3,6 +3,7 @@
 #include "XingyiViewportClient.h"
 
 #include "XingyiCommon.h"
+#include "XingyiGroupDrop.h"
 #include "XingyiLighting.h"
 #include "XingyiSettings.h"
 
@@ -265,31 +266,142 @@ EXingyiLevelLoadResult FXingyiViewportClient::OpenSourceLevel(const FAssetData& 
 
 void FXingyiViewportClient::DropPaletteSelection()
 {
-	AActor* PreviousActor = PaletteSelectedActor.Get();
-	if (PreviousActor && GEditor)
+	USelection* Selection = GEditor ? GEditor->GetSelectedActors() : nullptr;
+	bool bDeselectedAny = false;
+
+	for (const TWeakObjectPtr<AActor>& WeakActor : PaletteSelection)
 	{
-		if (USelection* Selection = GEditor->GetSelectedActors())
+		AActor* Actor = WeakActor.Get();
+		if (Actor && Selection)
 		{
-			// 只摘掉我们自己那一个，不动用户在关卡里原本就选中的东西
-			Selection->Deselect(PreviousActor);
-			GEditor->NoteSelectionChange();
+			// 只摘掉我们自己那几个，不动用户在关卡里原本就选中的东西
+			Selection->Deselect(Actor);
+			bDeselectedAny = true;
 		}
 	}
 
-	PaletteSelectedActor = nullptr;
+	PaletteSelection.Reset();
+
+	if (bDeselectedAny && GEditor)
+	{
+		GEditor->NoteSelectionChange();
+	}
+
+	// ⚠️ 必须自己重画面板。
+	// NoteSelectionChange() 只会让**关卡视口**重画；面板里的预览世界是另一个世界，
+	// 面板又是个独立的 FEditorViewportClient、默认还不实时（SetRealtime(false)），
+	// 所以不主动 Invalidate 的话，选中状态是清了，但描边会一直挂在画面上，
+	// 看着就像"还在选中"。
+	Invalidate();
 }
 
-void FXingyiViewportClient::MarkPaletteActorSelected(AActor* PaletteActor, bool bNotifySelectionChange)
+int32 FXingyiViewportClient::GetPaletteSelectionCount() const
 {
-	if (!PaletteActor || !GEditor)
+	int32 Count = 0;
+	for (const TWeakObjectPtr<AActor>& WeakActor : PaletteSelection)
+	{
+		Count += WeakActor.IsValid() ? 1 : 0;
+	}
+	return Count;
+}
+
+TArray<AActor*> FXingyiViewportClient::GetSelectedPaletteActors() const
+{
+	TArray<AActor*> Actors;
+	Actors.Reserve(PaletteSelection.Num());
+
+	for (const TWeakObjectPtr<AActor>& WeakActor : PaletteSelection)
+	{
+		if (AActor* Actor = WeakActor.Get())
+		{
+			Actors.Add(Actor);
+		}
+	}
+
+	return Actors;
+}
+
+bool FXingyiViewportClient::IsPaletteActorSelected(const AActor* PaletteActor) const
+{
+	for (const TWeakObjectPtr<AActor>& WeakActor : PaletteSelection)
+	{
+		if (WeakActor.Get() == PaletteActor)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool FXingyiViewportClient::HasDraggableAsset(AActor* PaletteActor)
+{
+	if (!IsValid(PaletteActor))
+	{
+		return false;
+	}
+
+	// 面板里的 Actor 靠"自己引用的那份资产"才能拖出去。
+	// 灯光、天空球、体积框之类没有引用资产，拖不了 —— 没必要让它们进选中集。
+	TArray<UObject*> ReferencedAssets;
+	PaletteActor->GetReferencedContentObjects(ReferencedAssets);
+	return ReferencedAssets.Num() > 0 && ReferencedAssets[0] != nullptr;
+}
+
+void FXingyiViewportClient::SetMultiSelectMode(bool bEnabled)
+{
+	if (bMultiSelectMode == bEnabled)
 	{
 		return;
 	}
 
-	if (USelection* Selection = GEditor->GetSelectedActors())
+	bMultiSelectMode = bEnabled;
+
+	// 关掉多选就把选中清干净 —— 否则关掉之后点已选中的还会拖整组，
+	// 那就不是"和以前一模一样"了。
+	if (!bMultiSelectMode)
 	{
-		Selection->Select(PaletteActor, /*bNotify=*/true);
-		PaletteSelectedActor = PaletteActor;
+		DropPaletteSelection();
+	}
+
+	Invalidate();
+}
+
+void FXingyiViewportClient::SetPaletteActorSelected(AActor* PaletteActor, bool bSelected, bool bNotifySelectionChange)
+{
+	if (!IsValid(PaletteActor) || !GEditor)
+	{
+		return;
+	}
+
+	if (bSelected == IsPaletteActorSelected(PaletteActor))
+	{
+		return; // 状态没变，别白折腾编辑器的选中集
+	}
+
+	USelection* Selection = GEditor->GetSelectedActors();
+
+	if (bSelected)
+	{
+		PaletteSelection.Add(PaletteActor);
+
+		// 也塞进编辑器选中集：这样预览里会给它描边，用户看得见自己选了哪些
+		if (Selection)
+		{
+			Selection->Select(PaletteActor, /*bNotify=*/true);
+		}
+	}
+	else
+	{
+		PaletteSelection.RemoveAllSwap([PaletteActor](const TWeakObjectPtr<AActor>& WeakActor)
+		{
+			return WeakActor.Get() == PaletteActor;
+		});
+
+		if (Selection)
+		{
+			Selection->Deselect(PaletteActor);
+		}
 	}
 
 	if (bNotifySelectionChange)
@@ -318,30 +430,117 @@ AActor* FXingyiViewportClient::ResolveActorUnderCursor(const FInputKeyEventArgs&
 	return ActorProxy->Actor->IsLockLocation() ? nullptr : ActorProxy->Actor;
 }
 
-void FXingyiViewportClient::BeginDragOutOfPalette(AActor* PaletteActor)
+void FXingyiViewportClient::BeginDragOutOfPalette(const TArray<AActor*>& PaletteActors, AActor* AnchorActor)
 {
-	if (!PaletteActor)
+	if (!IsValid(AnchorActor) || PaletteActors.Num() == 0)
 	{
 		return;
 	}
 
-	// 面板里的 Actor 属于预览世界，它「代表」的是自己引用的那份资产 ——
-	// 把资产拖出去，落到关卡里就是新建一份。灯光、空 Actor 之类没有引用资产，拖不了。
-	TArray<UObject*> ReferencedAssets;
-	PaletteActor->GetReferencedContentObjects(ReferencedAssets);
-	if (ReferencedAssets.Num() == 0 || !ReferencedAssets[0])
+	// 起点 Actor 在源关卡里的变换。其余的都相对它记 ——
+	// 拖拽落点会把起点放在鼠标那儿，其余的就绕着它摆回去。
+	const FTransform AnchorTransform = AnchorActor->GetActorTransform();
+
+	TArray<FAssetData> Assets;
+	XingyiGroupDrop::FPayload Payload;
+	int32 ActorsWithAsset = 0;
+
+	for (AActor* Actor : PaletteActors)
+	{
+		if (!IsValid(Actor))
+		{
+			continue;
+		}
+
+		// 面板里的 Actor 属于预览世界，它「代表」的是自己引用的那份资产 ——
+		// 把资产拖出去，落到关卡里就是新建一份。灯光、空 Actor 之类没有引用资产，拖不了。
+		TArray<UObject*> ReferencedAssets;
+		Actor->GetReferencedContentObjects(ReferencedAssets);
+		if (ReferencedAssets.Num() == 0 || !ReferencedAssets[0])
+		{
+			UE_LOG(LogXingyi, Display, TEXT("星移：%s 没有可拖拽的资产，跳过。"), *Actor->GetName());
+			continue;
+		}
+
+		++ActorsWithAsset;
+
+		UObject* Asset = ReferencedAssets[0];
+		const FTransform ActorTransform = Actor->GetActorTransform();
+
+		XingyiGroupDrop::FPlacement Placement;
+		Placement.LocationOffset = ActorTransform.GetLocation() - AnchorTransform.GetLocation();
+		Placement.Rotation = ActorTransform.GetRotation();
+		Placement.Scale = ActorTransform.GetScale3D();
+		Placement.bAnchor = (Actor == AnchorActor);
+
+		Payload.FindOrAdd(Asset).Add(Placement);
+
+		// 起点排在资产列表最前面：UE 的放置顺序跟着这个列表走，
+		// 收尾那边按资产 + 顺序对号入座，起点一定配得上。
+		// ⚠️ 第二个参数是 bAllowBlueprintClass（老版本叫 bInUseLoadingClass），不是"用加载类"。
+		const FAssetData AssetData(Asset, /*bAllowBlueprintClass=*/true);
+		if (Placement.bAnchor)
+		{
+			Assets.Insert(AssetData, 0);
+		}
+		else
+		{
+			Assets.Add(AssetData);
+		}
+	}
+
+	UE_LOG(LogXingyi, Display, TEXT("星移：成组拖拽 —— 选中 %d 个，有资产的 %d 个，送进拖拽 %d 个资产，起点=%s。"),
+		PaletteActors.Num(), ActorsWithAsset, Assets.Num(), *AnchorActor->GetName());
+
+	if (Assets.Num() == 0)
 	{
 		return;
 	}
 
-	TSharedPtr<FAssetDragDropOp> DragOperation = FAssetDragDropOp::New(FAssetData(ReferencedAssets[0], true));
+	TSharedPtr<FAssetDragDropOp> DragOperation = FAssetDragDropOp::New(Assets);
 	if (!DragOperation.IsValid())
 	{
 		return;
 	}
 
-	MarkPaletteActorSelected(PaletteActor, /*bNotifySelectionChange=*/false);
-	PaletteActor->MarkComponentsRenderStateDirty();
+	// 拖着鼠标时那个缩略图，FAssetDragDropOp 内部**只画第一个资产**
+	// （InitThumbnail 里用的是 AssetData[0]），而且 UE 的落点预览会把所有对象
+	// 全叠在光标那一点上、位置由引擎写死（见 FActorPositioning::GetSurfaceAlignedTransform，
+	// SurfaceLocation 就是光标落点，StartTransform 只参与旋转和缩放）。
+	// 所以拖多个时，光看光标那儿根本看不出拖了几个 —— 这里补一句实情。
+	if (Assets.Num() > 1)
+	{
+		// 图标沿用拖拽操作自己的（一般是空的，那也没关系，提示文字本来就不需要图标）
+		DragOperation->SetToolTip(
+			FText::Format(
+				LOCTEXT("DragGroupHint", "{0} 个对象 · 放下后按原布局摆放"),
+				FText::AsNumber(Assets.Num())),
+			DragOperation->GetIcon());
+	}
+
+	// 把摆放数据交出去。UE 会把这组资产全放在光标那一点上，
+	// 放置完它广播 OnNewActorsPlaced，收尾模块收到之后把它们摆回相对位置。
+	XingyiGroupDrop::Begin(MoveTemp(Payload), AnchorTransform.GetRotation());
+
+	// ⚠️ 必须走 SetPaletteActorSelected —— 它会同时记进 PaletteSelection。
+	// 光去动编辑器选中集的话，拖拽结束时的清理会漏掉这几个 Actor，
+	// 它们就会永远留在编辑器里被描边（按 Delete 会误删关卡里的东西）。
+	// 这正是官方 Actor Palette 上那个「跨世界选中残留」的老毛病。
+	for (AActor* Actor : PaletteActors)
+	{
+		SetPaletteActorSelected(Actor, /*bSelected=*/true, /*bNotifySelectionChange=*/false);
+
+		if (IsValid(Actor))
+		{
+			Actor->MarkComponentsRenderStateDirty();
+		}
+	}
+
+	if (GEditor)
+	{
+		GEditor->NoteSelectionChange();
+	}
+
 	Invalidate();
 
 	FSlateApplication& SlateApp = FSlateApplication::Get();
@@ -396,26 +595,66 @@ bool FXingyiViewportClient::HandlePaletteClick(const FInputKeyEventArgs& InEvent
 		return false;
 	}
 
-	TArray<UObject*> ReferencedAssets;
-	HitActor->GetReferencedContentObjects(ReferencedAssets);
+	// —— 多选模式 ——
+	// 只有工具栏上那个「多选」按钮开着时才走这条路。默认关着，行为完全等于以前。
+	if (bMultiSelectMode)
+	{
+		// Ctrl + 左键 = 移出选中。多选模式下"点已选中的"已经被"拖出去"占用了，
+		// 这里是唯一的减选入口。
+		if (FSlateApplication::Get().GetModifierKeys().IsControlDown())
+		{
+			SetPaletteActorSelected(HitActor, /*bSelected=*/false);
+			Invalidate();
+			return true;
+		}
 
+		// 点还没选上的 -> 加进选中
+		if (!IsPaletteActorSelected(HitActor))
+		{
+			// 没有可拖拽资产的不收进来。
+			// 关卡里满天都是天空球、大气、体积框，想点"空处"时射线十有八九打在它们身上；
+			// 收进来只会让选中计数虚高，拖的时候又被跳过，反而看不懂。
+			if (!HasDraggableAsset(HitActor))
+			{
+				UE_LOG(LogXingyi, Display, TEXT("星移：%s 没有可拖拽的资产，不进选中集。"), *HitActor->GetName());
+				return true;
+			}
+
+			SetPaletteActorSelected(HitActor, /*bSelected=*/true);
+			Invalidate();
+			return true;
+		}
+
+		// 点已经选上的 -> 把这一组一起拖出去，它当起点
+		BeginDragOutOfPalette(GetSelectedPaletteActors(), HitActor);
+		return true;
+	}
+
+	// —— 普通模式：完全等于原来的行为 —— 点一下就拖这一个 ——
+
+	// 顺手把多选模式下可能残留的选中清掉
 	DropPaletteSelection();
 
-	if (ReferencedAssets.Num() == 0 || !ReferencedAssets[0])
+	if (!HasDraggableAsset(HitActor))
 	{
 		// 没有可拖拽的资产（灯光、空 Actor 之类），退化成「点一下选中它」
-		MarkPaletteActorSelected(HitActor, /*bNotifySelectionChange=*/true);
+		SetPaletteActorSelected(HitActor, /*bSelected=*/true);
 		Invalidate();
 		return true;
 	}
 
-	BeginDragOutOfPalette(HitActor);
+	BeginDragOutOfPalette({ HitActor }, HitActor);
 	return true;
 }
 
 bool FXingyiViewportClient::InputKey(const FInputKeyEventArgs& InEventArgs)
 {
-	if (InEventArgs.Key == EKeys::LeftMouseButton && HandlePaletteClick(InEventArgs))
+	// ⚠️ InputKey 在「按下」和「松开」时各来一次。面板的点选 / 拖拽只认**按下**：
+	// 不加这个判断的话，按住 Shift 点一下会在按下时加选、松手时又减掉，等于白点。
+	// （修饰键读的是"这一下点击发生时"的状态，不是切换模式 —— 松开 Shift 立刻恢复正常点击。）
+	if (InEventArgs.Key == EKeys::LeftMouseButton
+		&& InEventArgs.Event == IE_Pressed
+		&& HandlePaletteClick(InEventArgs))
 	{
 		return true;
 	}
@@ -444,11 +683,14 @@ void FXingyiViewportClient::Tick(float DeltaSeconds)
 		}
 	}
 
-	// 假拖拽放下或者被取消之后，把面板里的 Actor 从编辑器选中集里摘干净 ——
-	// 否则它会一直挂在细节面板上，被「删除选中项」之类的操作误伤。
+	// 假拖拽放下或者被取消之后，做两件收尾的事：
+	//   1) 成组拖拽还没摆完的（被取消、或者有资产没放下），在这里把已经收到的摆好；
+	//   2) 把面板里的 Actor 从编辑器选中集里摘干净 —— 否则它们会一直挂在细节面板上，
+	//      被「删除选中项」之类的操作误伤。
 	if (bDragOutActive && !FSlateApplication::Get().IsDragDropping())
 	{
 		bDragOutActive = false;
+		XingyiGroupDrop::Flush();
 		DropPaletteSelection();
 	}
 }

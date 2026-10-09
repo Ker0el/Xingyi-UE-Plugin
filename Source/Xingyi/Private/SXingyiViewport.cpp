@@ -152,6 +152,36 @@ TSharedPtr<SWidget> SXingyiViewport::BuildViewportToolbar()
 				.Text(LOCTEXT("ResetCamera", "重置相机"))
 				.ToolTipText(LOCTEXT("ResetCameraTooltip", "回到这个关卡保存时的相机位置"))
 			]
+
+			// 多选
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.Padding(6.0f, 0.0f, 2.0f, 0.0f)
+			.VAlign(VAlign_Center)
+			[
+				SNew(SCheckBox)
+				.IsChecked(this, &SXingyiViewport::GetMultiSelectState)
+				.OnCheckStateChanged(this, &SXingyiViewport::OnMultiSelectChanged)
+				.ToolTipText(LOCTEXT("MultiSelectTooltip",
+					"多选：点没选中的 Actor 把它加进选中；点已选中的就把这一组一起拖进关卡。Ctrl + 点可以移出选中"))
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("MultiSelect", "多选模式"))
+				]
+			]
+
+			// 清空选中
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.Padding(2.0f, 0.0f)
+			.VAlign(VAlign_Center)
+			[
+				SNew(SButton)
+				.OnClicked(this, &SXingyiViewport::OnClearSelectionClicked)
+				.Text(LOCTEXT("ClearSelection", "清空选中"))
+				.ToolTipText(LOCTEXT("ClearSelectionTooltip",
+					"清空面板里的选中。关卡里满天都是天空球、大气和体积框，想靠点空处来清空基本点不到，所以单给一个按钮"))
+			]
 		];
 }
 
@@ -370,6 +400,31 @@ void SXingyiViewport::OnRealtimeChanged(ECheckBoxState NewState)
 		TypedViewportClient->SetRealtime(NewState == ECheckBoxState::Checked);
 		TypedViewportClient->Invalidate();
 	}
+}
+
+ECheckBoxState SXingyiViewport::GetMultiSelectState() const
+{
+	return (TypedViewportClient.IsValid() && TypedViewportClient->IsMultiSelectMode())
+		? ECheckBoxState::Checked
+		: ECheckBoxState::Unchecked;
+}
+
+void SXingyiViewport::OnMultiSelectChanged(ECheckBoxState NewState)
+{
+	if (TypedViewportClient.IsValid())
+	{
+		TypedViewportClient->SetMultiSelectMode(NewState == ECheckBoxState::Checked);
+	}
+}
+
+FReply SXingyiViewport::OnClearSelectionClicked()
+{
+	if (TypedViewportClient.IsValid())
+	{
+		TypedViewportClient->DropPaletteSelection();
+	}
+
+	return FReply::Handled();
 }
 
 //////////////////////////////////////////////////////////////////////////

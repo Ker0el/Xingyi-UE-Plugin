@@ -65,8 +65,25 @@ public:
 	/** 把显示相关的设置重新套一遍（从默认标志出发再叠加，这样「性能模式」关得掉） */
 	void ApplyDisplaySettings();
 
-	/** 把面板里选中的那个 Actor 从编辑器选中集里摘掉 */
+	/** 把面板里选中的那些 Actor 从编辑器选中集里摘干净 */
 	void DropPaletteSelection();
+
+	/** 面板里选中了几个 Actor */
+	int32 GetPaletteSelectionCount() const;
+
+	/** 面板里选中的 Actor（已经剔掉失效的） */
+	TArray<AActor*> GetSelectedPaletteActors() const;
+
+	/** 这个 Actor 在面板里选中了没有 */
+	bool IsPaletteActorSelected(const AActor* PaletteActor) const;
+
+	/**
+	 * 多选模式。
+	 * 关着（默认）：左键点 Actor 就是"直接拖出去"，和以前完全一样。
+	 * 开着：点没选中的是"加进选中"，点已选中的才是"把这一组拖出去"。
+	 */
+	bool IsMultiSelectMode() const { return bMultiSelectMode; }
+	void SetMultiSelectMode(bool bEnabled);
 
 	// ---- 面板底部状态条要用的信息 ----
 
@@ -98,11 +115,27 @@ private:
 	/** 从命中信息里找出一个能拖拽的 Actor；找不到返回 nullptr */
 	static AActor* ResolveActorUnderCursor(const FInputKeyEventArgs& InEventArgs);
 
-	/** 替这个 Actor 发起一次「把它的资产拖出去」的假拖拽 */
-	void BeginDragOutOfPalette(AActor* PaletteActor);
+	/** 这个 Actor 有没有能拖出去的资产（灯光、天空球、体积框这类没有） */
+	static bool HasDraggableAsset(AActor* PaletteActor);
 
-	/** 把面板里那个 Actor 记进编辑器选中集；拖拽期间它需要处于选中状态 */
-	void MarkPaletteActorSelected(AActor* PaletteActor, bool bNotifySelectionChange);
+	/**
+	 * 把这一组 Actor 一起拖出去。
+	 *
+	 * @param PaletteActors 要拖的 Actor（属于预览世界）
+	 * @param AnchorActor   拖拽起点 —— 它落在哪儿，其余的绕着它摆回原来的相对位置
+	 */
+	void BeginDragOutOfPalette(const TArray<AActor*>& PaletteActors, AActor* AnchorActor);
+
+	/**
+	 * 把某个 Actor 加进 / 移出面板选中集。
+	 *
+	 * ⚠️ 必须走这里，不能只去动编辑器的选中集 —— `PaletteSelection` 是拖拽结束时
+	 * "把面板 Actor 从编辑器选中集里摘干净"的唯一依据，漏记一个，它就会永远留在
+	 * 编辑器的选中集里（按 Delete 会误删关卡里的东西）。
+	 *
+	 * @param bNotifySelectionChange 批量操作时传 false，最后一并通知一次
+	 */
+	void SetPaletteActorSelected(AActor* PaletteActor, bool bSelected, bool bNotifySelectionChange = true);
 
 	/** 面板编号，从 1 开始 */
 	int32 PaneNumber;
@@ -116,8 +149,11 @@ private:
 	/** 面板控件，用来找宿主窗口 */
 	TWeakPtr<SEditorViewport> ViewportWidget;
 
-	/** 面板里点选的那个 Actor。它属于预览世界，绝不能留在编辑器选中集里 */
-	TWeakObjectPtr<AActor> PaletteSelectedActor;
+	/**
+	 * 面板里选中的 Actor。
+	 * 它们属于预览世界，绝不能留在编辑器选中集里 —— 否则会被「删除选中项」之类的操作误伤。
+	 */
+	TArray<TWeakObjectPtr<AActor>> PaletteSelection;
 
 	/** 视口背景色 */
 	FLinearColor BackgroundColor;
@@ -139,4 +175,7 @@ private:
 
 	/** 正在用假拖拽把资产拖出面板 */
 	bool bDragOutActive = false;
+
+	/** 多选模式开着没有。默认关 —— 关着时行为和以前一模一样 */
+	bool bMultiSelectMode = false;
 };

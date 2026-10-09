@@ -38,6 +38,9 @@ private:
 	/** 底部状态条右边：「预览光照：…」 */
 	FText GetLightingLabel() const;
 
+	/** 底部状态条右边那句操作提示；多选时改成显示选了几个 */
+	FText GetStatusHint() const;
+
 	/** 还没打开任何关卡时，显示居中的引导 */
 	EVisibility GetEmptyHintVisibility() const;
 
