@@ -70,6 +70,9 @@ lighting is in use**, and **how many actors are selected**.
 Toolbar, left to right: **Select Level · Reload · Favorites · Lighting · Realtime · Game View ·
 Reset Camera · Multi-Select · Clear Selection**.
 
+The right end of the status bar carries the author credit **作者：星空** — clicking it opens the
+author's Bilibili page (<https://space.bilibili.com/177308205>) in the default browser.
+
 ---
 
 ## 4. Multi-select: move a whole group at once

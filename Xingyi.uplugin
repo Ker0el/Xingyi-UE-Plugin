@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
-	"Version": 3,
-	"VersionName": "1.2.2",
+	"Version": 4,
+	"VersionName": "1.2.3",
 	"EngineVersion": "5.8.0",
 	"FriendlyName": "Xingyi (星移)",
 	"Description": "Xingyi (星移) turns any level into an asset board: browse the actors of a saved level inside a panel and drag them straight into the level you are editing - one at a time, or as a group that keeps its relative layout.",

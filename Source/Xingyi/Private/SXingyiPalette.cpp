@@ -15,7 +15,9 @@
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SComboButton.h"
+#include "Widgets/Input/SHyperlink.h"
 #include "DragAndDrop/AssetDragDropOp.h"
+#include "HAL/PlatformProcess.h"
 
 #define LOCTEXT_NAMESPACE "Xingyi"
 
@@ -195,6 +197,21 @@ void SXingyiPalette::Construct(const FArguments& InArgs, int32 InPaneNumber)
 					SNew(STextBlock)
 					.Text(this, &SXingyiPalette::GetStatusHint)
 					.ColorAndOpacity(StatusFaintColor)
+				]
+
+				// 作者署名：点开是作者的 B 站主页
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.Padding(16.0f, 0.0f, 0.0f, 0.0f)
+				.VAlign(VAlign_Center)
+				[
+					SNew(SHyperlink)
+					.Text(LOCTEXT("AuthorLink", "作者：星空"))
+					.ToolTipText(LOCTEXT("AuthorLinkTooltip", "打开作者的 B 站主页"))
+					.OnNavigate(FSimpleDelegate::CreateLambda([]()
+					{
+						FPlatformProcess::LaunchURL(TEXT("https://space.bilibili.com/177308205"), nullptr, nullptr);
+					}))
 				]
 			]
 		]
