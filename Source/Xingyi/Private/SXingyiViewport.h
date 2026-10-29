@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 预览视口
 
 #pragma once

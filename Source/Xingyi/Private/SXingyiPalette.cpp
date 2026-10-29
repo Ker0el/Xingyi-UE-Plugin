@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 面板本体（实现）
 
 #include "SXingyiPalette.h"

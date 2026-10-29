@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 「选关卡」菜单
 //
 // 工具条上的「选择关卡」按钮，和空面板正中央那个「打开关卡…」按钮，用的是同一份菜单。

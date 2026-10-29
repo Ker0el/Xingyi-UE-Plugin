@@ -12,7 +12,7 @@
 [![Language](https://img.shields.io/badge/%E7%95%8C%E9%9D%A2-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-red)](../../releases/latest)
 [![Release](https://img.shields.io/github/v/release/Ker0el/Xingyi-UE-Plugin?color=blue&label=%E4%B8%8B%E8%BD%BD)](../../releases/latest)
 
-[下载](#安装) · [快速上手](#快速上手) · [多选](#多选一次搬一组东西) · [预览光照](#预览光照) · [常见问题](#常见问题)
+[下载](#安装) · [快速上手](#快速上手) · [多选](#多选一次搬一组东西) · [预览光照](#预览光照) · [常见问题](#常见问题) · [English](Docs/README_EN.md)
 
 </div>
 
@@ -183,6 +183,8 @@ git clone https://github.com/Ker0el/Xingyi-UE-Plugin.git Xingyi
 | UE 5.6 | ✅ | 5.6.x 全系列 |
 | UE 5.7 | ✅ | 5.7.x 全系列 |
 | UE 5.8 | ✅ | 5.8.x 全系列 |
+
+> **本次发布（v1.2.1）先只提供 UE 5.8 的包**，5.4–5.7 的预编译包会在后续版本补上。
 
 - **平台**：Win64（Windows 10 / 11）
 - **模块类型**：Editor 模块（仅编辑器内使用，不会打进打包后的游戏）

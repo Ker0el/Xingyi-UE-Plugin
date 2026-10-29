@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 「素材板关卡」本身的实现
 
 #include "XingyiSourceLevel.h"

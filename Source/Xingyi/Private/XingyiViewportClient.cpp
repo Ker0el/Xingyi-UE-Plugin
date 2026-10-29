@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 面板的视口客户端（实现）
 
 #include "XingyiViewportClient.h"

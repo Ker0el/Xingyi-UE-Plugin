@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 面板本体
 //
 // 一个面板 = 一个预览视口 + 两层空状态引导（盖在视口上）+ 一条底部状态条。

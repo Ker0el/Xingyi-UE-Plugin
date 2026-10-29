@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 模块入口（实现）
 
 #include "XingyiModule.h"

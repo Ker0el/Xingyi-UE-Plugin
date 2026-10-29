@@ -1,6 +1,8 @@
-﻿// 星移 Xingyi —— 模块依赖
+﻿// Copyright 2026 StarGame. All Rights Reserved.
+// 星移 Xingyi —— 模块依赖（UnrealBuildTool）
 //
-// 这个文件是星移自己的，没有沿用任何 Unreal Engine 示例插件的代码。
+// 星移是一个纯编辑器模块：只依赖编辑器 UI、关卡编辑和内容浏览器相关的模块。
+// 所有类型都只在编辑器内使用，打包后的游戏不会加载它。
 
 using UnrealBuildTool;
 
@@ -8,32 +10,32 @@ public class Xingyi : ModuleRules
 {
 	public Xingyi(ReadOnlyTargetRules Target) : base(Target)
 	{
-		// 关掉「未定义标识符按错误处理」即可，对正常代码没有影响。
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"Core",
+		});
 
-		PublicDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"Core",
-			}
-			);
+		// 编辑器 UI：Slate 控件、菜单、工作区菜单分组
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"Slate",
+			"SlateCore",
+			"ToolMenus",
+			"WorkspaceMenuStructure",
+			"UnrealEd",
+		});
 
-		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"Projects",
-				"InputCore",
-				"UnrealEd",
-				"ToolMenus",
-				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore",
-				"ContentBrowser",
-				"WorkspaceMenuStructure",
-				"DeveloperSettings"
-			}
-			);
+		// 关卡与世界：资产加载、视口客户端、内容浏览器拖放
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"CoreUObject",
+			"Engine",
+			"InputCore",
+			"ContentBrowser",
+			"Projects",
+			"DeveloperSettings",
+		});
 	}
 }

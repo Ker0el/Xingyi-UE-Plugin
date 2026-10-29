@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 「素材板关卡」本身
 //
 // 面板里的预览世界是一个 FPreviewScene。素材板关卡不是被"打开"，而是以流式关卡的形式

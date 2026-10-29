@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 自动化测试
 //
 // 跑法（命令行，无界面）：

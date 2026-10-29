@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 预览光照策略（实现）
 
 #include "XingyiLighting.h"

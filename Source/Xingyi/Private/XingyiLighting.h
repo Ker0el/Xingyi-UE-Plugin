@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 预览光照策略
 //
 // 这个文件是星移自己的实现。它解决的问题是：构造面板用的 FPreviewScene 会自带一盏平行光，

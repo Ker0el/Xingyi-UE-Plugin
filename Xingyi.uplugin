@@ -1,11 +1,16 @@
 {
 	"FileVersion": 3,
-	"Version": 1,
+	"Version": 2,
 	"VersionName": "1.2.1",
-	"FriendlyName": "星移",
-	"Description": "寓意：斗转星移。把任意关卡当作素材板，在面板里浏览关卡中的 Actor，直接点选拖拽即可移入当前关卡。",
+	"EngineVersion": "5.8.0",
+	"FriendlyName": "Xingyi (星移)",
+	"Description": "Xingyi (星移) turns any level into an asset board: browse the actors of a saved level inside a panel and drag them straight into the level you are editing - one at a time, or as a group that keeps its relative layout.",
 	"Category": "Editor",
-	"CreatedBy": "星空",
+	"CreatedBy": "StarGame",
+	"CreatedByURL": "https://space.bilibili.com/177308205",
+	"DocsURL": "https://github.com/Ker0el/Xingyi-UE-Plugin/blob/main/Docs/README_EN.md",
+	"MarketplaceURL": "",
+	"SupportURL": "https://github.com/Ker0el/Xingyi-UE-Plugin/issues",
 	"CanContainContent": false,
 	"IsBetaVersion": false,
 	"EnabledByDefault": true,
@@ -13,7 +18,8 @@
 		{
 			"Name": "Xingyi",
 			"Type": "Editor",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [ "Win64" ]
 		}
 	]
 }

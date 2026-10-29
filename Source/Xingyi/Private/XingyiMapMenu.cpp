@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 「选关卡」菜单（实现）
 
 #include "XingyiMapMenu.h"

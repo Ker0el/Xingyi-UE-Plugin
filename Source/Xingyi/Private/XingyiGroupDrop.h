@@ -1,3 +1,4 @@
+// Copyright 2026 StarGame. All Rights Reserved.
 // 星移 Xingyi —— 成组拖拽的收尾
 //
 // 【为什么需要这个】
