@@ -29,7 +29,7 @@ struct FXingyiLevelRecord
 	GENERATED_BODY()
 
 	/** 关卡资产的完整对象路径，同时充当这条记录的唯一键 */
-	UPROPERTY(EditAnywhere, Category = "星移")
+	UPROPERTY(EditAnywhere, Category = "Xingyi")
 	FString LevelPath;
 
 	/** 收藏过的关卡不受「记住多少个最近打开的关卡」上限影响 */
@@ -49,7 +49,7 @@ struct FXingyiLevelRecord
  *
  * 存在 EditorPerProjectUserSettings 里，所以是一台机器一份、不进版本库。
  */
-UCLASS(config = EditorPerProjectUserSettings, meta = (DisplayName = "星移"))
+UCLASS(config = EditorPerProjectUserSettings, meta = (DisplayName = "Xingyi"))
 class UXingyiSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
@@ -66,7 +66,7 @@ public:
 	TArray<FXingyiLevelRecord> KnownLevels;
 
 	/** 「最近打开」最多记住多少条（收藏不受这个上限影响） */
-	UPROPERTY(config, EditAnywhere, Category = "列表", meta = (ClampMin = 0, ClampMax = 25, DisplayName = "记住多少个最近打开的关卡"))
+	UPROPERTY(config, EditAnywhere, Category = "History", meta = (ClampMin = 0, ClampMax = 25, DisplayName = "Recent Levels To Remember"))
 	int32 RecentHistoryLimit = 10;
 
 	/** 每个面板最后一次打开的关卡路径；下标 0 对应 1 号面板 */
@@ -82,15 +82,15 @@ public:
 	// ------------------------------------------------------------------
 
 	/** 兜底光的点亮策略。默认始终点亮，预览亮度和官方版一致 */
-	UPROPERTY(config, EditAnywhere, Category = "预览光照", meta = (DisplayName = "兜底光源模式"))
+	UPROPERTY(config, EditAnywhere, Category = "Preview Lighting", meta = (DisplayName = "Fallback Light Mode"))
 	EXingyiFallbackLightMode FallbackLightMode = EXingyiFallbackLightMode::AlwaysOn;
 
 	/** 兜底光的强度（只有点亮时才有效） */
-	UPROPERTY(config, EditAnywhere, Category = "预览光照", meta = (ClampMin = 0.0, ClampMax = 20.0, DisplayName = "兜底光强度"))
+	UPROPERTY(config, EditAnywhere, Category = "Preview Lighting", meta = (ClampMin = 0.0, ClampMax = 20.0, DisplayName = "Fallback Light Intensity"))
 	float FallbackLightIntensity = 3.1415926f;
 
 	/** 兜底光的角度 */
-	UPROPERTY(config, EditAnywhere, Category = "预览光照", meta = (DisplayName = "兜底光角度"))
+	UPROPERTY(config, EditAnywhere, Category = "Preview Lighting", meta = (DisplayName = "Fallback Light Rotation"))
 	FRotator FallbackLightRotation = FRotator(-40.0f, -67.5f, 0.0f);
 
 	// ------------------------------------------------------------------
@@ -98,7 +98,7 @@ public:
 	// ------------------------------------------------------------------
 
 	/** 预览里的地面网格 */
-	UPROPERTY(config, EditAnywhere, Category = "显示", meta = (DisplayName = "显示地面网格"))
+	UPROPERTY(config, EditAnywhere, Category = "Display", meta = (DisplayName = "Show Ground Grid"))
 	bool bShowGrid = true;
 
 	/**
@@ -106,15 +106,15 @@ public:
 	 * 默认关：用关卡自己存的编辑器视角（和官方版一样）。因为「内容」里常有雾、体积云这类
 	 * 位置很奇怪的东西，一框就容易把相机拽到地形底下去。
 	 */
-	UPROPERTY(config, EditAnywhere, Category = "显示", meta = (DisplayName = "打开关卡后自动框住内容"))
+	UPROPERTY(config, EditAnywhere, Category = "Display", meta = (DisplayName = "Frame Content On Level Load"))
 	bool bFrameContentOnLoad = false;
 
 	/** 公告板精灵（粒子、材质球没了它就是空的） */
-	UPROPERTY(config, EditAnywhere, Category = "显示", meta = (DisplayName = "显示公告板精灵"))
+	UPROPERTY(config, EditAnywhere, Category = "Display", meta = (DisplayName = "Show Billboard Sprites"))
 	bool bShowBillboardSprites = true;
 
 	/** 关掉 Lumen 等高级特性换取帧率，会改变预览观感 */
-	UPROPERTY(config, EditAnywhere, Category = "显示", meta = (DisplayName = "性能模式（关闭 Lumen 等高级特性）"))
+	UPROPERTY(config, EditAnywhere, Category = "Display", meta = (DisplayName = "Performance Mode (disables advanced features such as Lumen)"))
 	bool bPerformanceMode = false;
 
 	// ------------------------------------------------------------------

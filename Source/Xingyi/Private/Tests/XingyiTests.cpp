@@ -61,24 +61,24 @@ bool FXingyiFallbackLightDecisionTest::RunTest(const FString& Parameters)
 {
 	using XingyiLighting::ShouldUseFallbackLight;
 
-	TestTrue(TEXT("Auto + 关卡没有光源 -> 点亮兜底光"),
+	TestTrue(TEXT("Auto + level has no lights -> fallback light on"),
 		ShouldUseFallbackLight(EXingyiFallbackLightMode::Auto, 0));
-	TestFalse(TEXT("Auto + 关卡有 1 盏灯 -> 用关卡的光"),
+	TestFalse(TEXT("Auto + level has 1 light -> use the level lighting"),
 		ShouldUseFallbackLight(EXingyiFallbackLightMode::Auto, 1));
-	TestFalse(TEXT("Auto + 关卡有 8 盏灯 -> 用关卡的光"),
+	TestFalse(TEXT("Auto + level has 8 lights -> use the level lighting"),
 		ShouldUseFallbackLight(EXingyiFallbackLightMode::Auto, 8));
 
-	TestTrue(TEXT("始终点亮 + 没光"),
+	TestTrue(TEXT("Always On + no lights"),
 		ShouldUseFallbackLight(EXingyiFallbackLightMode::AlwaysOn, 0));
-	TestTrue(TEXT("始终点亮 + 有光"),
+	TestTrue(TEXT("Always On + has lights"),
 		ShouldUseFallbackLight(EXingyiFallbackLightMode::AlwaysOn, 3));
-	TestFalse(TEXT("始终关闭 + 没光"),
+	TestFalse(TEXT("Always Off + no lights"),
 		ShouldUseFallbackLight(EXingyiFallbackLightMode::AlwaysOff, 0));
-	TestFalse(TEXT("始终关闭 + 有光"),
+	TestFalse(TEXT("Always Off + has lights"),
 		ShouldUseFallbackLight(EXingyiFallbackLightMode::AlwaysOff, 3));
 
 	// 脏数据不能崩，也不能把预览搞成全黑
-	TestTrue(TEXT("Auto + 负数按没有光源处理"),
+	TestTrue(TEXT("Auto + a negative light count is treated as no lights"),
 		ShouldUseFallbackLight(EXingyiFallbackLightMode::Auto, -1));
 
 	return true;
@@ -118,25 +118,25 @@ bool FXingyiSettingsLevelListTest::RunTest(const FString& Parameters)
 	const FString PathB = LevelB.GetObjectPathString();
 	const FString PathC = LevelC.GetObjectPathString();
 
-	TestTrue(TEXT("假资产本身有效"), LevelA.IsValid() && LevelB.IsValid() && LevelC.IsValid());
+	TestTrue(TEXT("The fake assets are valid"), LevelA.IsValid() && LevelB.IsValid() && LevelC.IsValid());
 
 	// ---- 打开一个关卡 ----
 	Settings->NoteLevelOpened(LevelA, /*PaneNumber=*/1);
 	{
 		TArray<FXingyiLevelRecord> Recent;
 		Settings->CollectRecentRecords(Recent, 10);
-		TestEqual(TEXT("最近打开 1 条"), Recent.Num(), 1);
-		TestTrue(TEXT("最近第一条是 A"), PathsOf(Recent) == TArray<FString>{ PathA });
+		TestEqual(TEXT("Recent list has 1 entry"), Recent.Num(), 1);
+		TestTrue(TEXT("The first recent entry is A"), PathsOf(Recent) == TArray<FString>{ PathA });
 	}
-	TestEqual(TEXT("只建了一条记录"), Settings->KnownLevels.Num(), 1);
-	TestEqual(TEXT("1 号面板记住了 A"), Settings->GetPaneLastLevelPath(1), PathA);
+	TestEqual(TEXT("Only one record was created"), Settings->KnownLevels.Num(), 1);
+	TestEqual(TEXT("Panel 1 remembers A"), Settings->GetPaneLastLevelPath(1), PathA);
 
 	// ---- 再打开 B：B 排到最前，A 退一位 ----
 	Settings->NoteLevelOpened(LevelB, 1);
 	{
 		TArray<FXingyiLevelRecord> Recent;
 		Settings->CollectRecentRecords(Recent, 10);
-		TestTrue(TEXT("B 冒到最前、A 退到第二"), PathsOf(Recent) == TArray<FString>{ PathB, PathA });
+		TestTrue(TEXT("B moved to the front, A dropped to second"), PathsOf(Recent) == TArray<FString>{ PathB, PathA });
 	}
 
 	// ---- 重复打开 A：应该冒泡，而不是多出一条 ----
@@ -144,16 +144,16 @@ bool FXingyiSettingsLevelListTest::RunTest(const FString& Parameters)
 	{
 		TArray<FXingyiLevelRecord> Recent;
 		Settings->CollectRecentRecords(Recent, 10);
-		TestEqual(TEXT("重复打开不增加条目"), Recent.Num(), 2);
-		TestTrue(TEXT("A 回到最前"), PathsOf(Recent) == TArray<FString>{ PathA, PathB });
+		TestEqual(TEXT("Reopening does not add an entry"), Recent.Num(), 2);
+		TestTrue(TEXT("A is back at the front"), PathsOf(Recent) == TArray<FString>{ PathA, PathB });
 	}
 
 	// ---- 不同面板各记各的 ----
 	Settings->NoteLevelOpened(LevelC, /*PaneNumber=*/3);
-	TestEqual(TEXT("3 号面板记的是 C"), Settings->GetPaneLastLevelPath(3), PathC);
-	TestEqual(TEXT("1 号面板还是 A"), Settings->GetPaneLastLevelPath(1), PathA);
-	TestTrue(TEXT("没打开过的 2 号面板返回空"), Settings->GetPaneLastLevelPath(2).IsEmpty());
-	TestTrue(TEXT("越界的面板号也返回空"), Settings->GetPaneLastLevelPath(99).IsEmpty());
+	TestEqual(TEXT("Panel 3 remembers C"), Settings->GetPaneLastLevelPath(3), PathC);
+	TestEqual(TEXT("Panel 1 still holds A"), Settings->GetPaneLastLevelPath(1), PathA);
+	TestTrue(TEXT("Panel 2 (never opened) returns empty"), Settings->GetPaneLastLevelPath(2).IsEmpty());
+	TestTrue(TEXT("An out-of-range panel number returns empty"), Settings->GetPaneLastLevelPath(99).IsEmpty());
 
 	// ---- 上限裁剪 ----
 	Settings->RecentHistoryLimit = 2;
@@ -161,16 +161,16 @@ bool FXingyiSettingsLevelListTest::RunTest(const FString& Parameters)
 	{
 		TArray<FXingyiLevelRecord> Recent;
 		Settings->CollectRecentRecords(Recent, 10);
-		TestEqual(TEXT("最近打开裁到 2 条"), Recent.Num(), 2);
-		TestTrue(TEXT("留下的是最近打开过的 C 和 A（B 最旧，被裁掉）"),
+		TestEqual(TEXT("Recent list trimmed to 2"), Recent.Num(), 2);
+		TestTrue(TEXT("C and A remain (B is the oldest and was trimmed)"),
 			PathsOf(Recent) == TArray<FString>{ PathC, PathA });
 	}
-	TestEqual(TEXT("表里也只剩 2 条"), Settings->KnownLevels.Num(), 2);
+	TestEqual(TEXT("The table also holds only 2 records"), Settings->KnownLevels.Num(), 2);
 
 	// ---- 收藏 ----
-	TestFalse(TEXT("A 一开始没收藏"), Settings->IsLevelPinned(LevelA));
-	TestTrue(TEXT("收藏操作返回新状态"), Settings->ToggleLevelPinned(LevelA));
-	TestTrue(TEXT("收藏之后查得到"), Settings->IsLevelPinned(LevelA));
+	TestFalse(TEXT("A is not favorited initially"), Settings->IsLevelPinned(LevelA));
+	TestTrue(TEXT("Toggling returns the new state"), Settings->ToggleLevelPinned(LevelA));
+	TestTrue(TEXT("A is favorited afterwards"), Settings->IsLevelPinned(LevelA));
 
 	// 收藏的关卡被挤出「最近打开」之后也不该被清掉
 	Settings->RecentHistoryLimit = 0;
@@ -178,40 +178,40 @@ bool FXingyiSettingsLevelListTest::RunTest(const FString& Parameters)
 	{
 		TArray<FXingyiLevelRecord> Pinned;
 		Settings->CollectPinnedRecords(Pinned);
-		TestEqual(TEXT("收藏列表只有一条"), Pinned.Num(), 1);
-		TestTrue(TEXT("被挤出最近列表的收藏还在"), PathsOf(Pinned) == TArray<FString>{ PathA });
+		TestEqual(TEXT("The favorites list has one entry"), Pinned.Num(), 1);
+		TestTrue(TEXT("A favorite dropped from Recent is kept"), PathsOf(Pinned) == TArray<FString>{ PathA });
 	}
 	{
 		TArray<FXingyiLevelRecord> Recent;
 		Settings->CollectRecentRecords(Recent, 10);
-		TestEqual(TEXT("最近打开被裁空"), Recent.Num(), 0);
+		TestEqual(TEXT("The recent list is trimmed to empty"), Recent.Num(), 0);
 	}
 
 	// ---- 取消收藏：它既不是收藏也不再算最近，但面板还指着它，所以记录要留着 ----
-	TestFalse(TEXT("再点一次取消收藏"), Settings->ToggleLevelPinned(LevelA));
+	TestFalse(TEXT("Toggling again unfavorites A"), Settings->ToggleLevelPinned(LevelA));
 	Settings->ForgetStaleLevels();
 	{
 		TArray<FXingyiLevelRecord> Pinned;
 		Settings->CollectPinnedRecords(Pinned);
-		TestEqual(TEXT("收藏列表空了"), Pinned.Num(), 0);
+		TestEqual(TEXT("The favorites list is empty"), Pinned.Num(), 0);
 	}
 	{
 		TArray<FXingyiLevelRecord> Recent;
 		Settings->CollectRecentRecords(Recent, 10);
-		TestEqual(TEXT("最近打开也空了"), Recent.Num(), 0);
+		TestEqual(TEXT("The recent list is empty"), Recent.Num(), 0);
 	}
-	TestEqual(TEXT("A 和 C 还是 1 号 / 3 号面板上次看的关卡，记录不能删"),
+	TestEqual(TEXT("A and C are still the last levels of panels 1 and 3; their records must stay"),
 		Settings->KnownLevels.Num(), 2);
 
 	// ---- 脏数据 ----
 	const int32 RecordsBefore = Settings->KnownLevels.Num();
 	Settings->NoteLevelOpened(FAssetData(), 1);
-	TestEqual(TEXT("空资产不会新增记录"), Settings->KnownLevels.Num(), RecordsBefore);
+	TestEqual(TEXT("An empty asset adds no record"), Settings->KnownLevels.Num(), RecordsBefore);
 
 	const int32 PaneSlotsBefore = Settings->PaneLastLevel.Num();
 	Settings->NoteLevelOpened(LevelB, /*PaneNumber=*/0);
-	TestEqual(TEXT("面板号 0 非法，不新增面板记录"), Settings->PaneLastLevel.Num(), PaneSlotsBefore);
-	TestEqual(TEXT("面板号 0 也不会留下记录"), Settings->KnownLevels.Num(), RecordsBefore);
+	TestEqual(TEXT("Panel number 0 is invalid; no panel record is added"), Settings->PaneLastLevel.Num(), PaneSlotsBefore);
+	TestEqual(TEXT("Panel number 0 leaves no record either"), Settings->KnownLevels.Num(), RecordsBefore);
 
 	return true;
 }
@@ -230,15 +230,15 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FXingyiViewportClientSmokeTest,
 bool FXingyiViewportClientSmokeTest::RunTest(const FString& Parameters)
 {
 	FXingyiViewportClient* Client = new FXingyiViewportClient(/*InPaneNumber=*/1);
-	TestNotNull(TEXT("视口客户端能构造出来"), Client);
+	TestNotNull(TEXT("The viewport client constructs"), Client);
 
 	if (Client)
 	{
-		TestEqual(TEXT("还没载入关卡时，关卡光源数应为 0"), Client->GetLevelLightCount(), 0);
-		TestFalse(TEXT("构造后就有光照状态文案（底部状态条要显示）"), Client->GetLightingStatusText().IsEmpty());
-		TestFalse(TEXT("构造后没有打开任何关卡"), Client->GetSourceLevelAsset().IsValid());
-		TestNotNull(TEXT("构造后预览世界是存在的"), Client->GetPreviewWorld());
-		TestEqual(TEXT("面板编号原样带过来"), Client->GetPaneNumber(), 1);
+		TestEqual(TEXT("The level light count is 0 before a level is loaded"), Client->GetLevelLightCount(), 0);
+		TestFalse(TEXT("Lighting status text exists right after construction (the status bar shows it)"), Client->GetLightingStatusText().IsEmpty());
+		TestFalse(TEXT("No level is open after construction"), Client->GetSourceLevelAsset().IsValid());
+		TestNotNull(TEXT("The preview world exists after construction"), Client->GetPreviewWorld());
+		TestEqual(TEXT("The pane number is carried over"), Client->GetPaneNumber(), 1);
 
 		// 改一遍设置再刷一次，确认「重新应用设置」这条路也不会崩
 		UXingyiSettings* Settings = GetMutableDefault<UXingyiSettings>();
@@ -257,7 +257,7 @@ bool FXingyiViewportClientSmokeTest::RunTest(const FString& Parameters)
 		Settings->bShowGrid = bSavedGrid;
 
 		Client->RefreshPreviewLighting();
-		TestEqual(TEXT("刷新光照后关卡光源数依然为 0"), Client->GetLevelLightCount(), 0);
+		TestEqual(TEXT("The level light count is still 0 after refreshing the lighting"), Client->GetLevelLightCount(), 0);
 
 		// 没打开关卡就调这些，也不该崩
 		Client->DropPaletteSelection();
@@ -290,7 +290,7 @@ bool FXingyiWorldPartitionDiagnosticTest::RunTest(const FString& Parameters)
 
 	if (!LevelAsset.IsValid())
 	{
-		AddWarning(TEXT("工程里没有 /Game/111.111（World Partition 测试关卡），跳过诊断。"));
+		AddWarning(TEXT("The project has no /Game/111.111 (World Partition test level); skipping diagnostics."));
 		return true;
 	}
 
@@ -298,7 +298,7 @@ bool FXingyiWorldPartitionDiagnosticTest::RunTest(const FString& Parameters)
 	Client->OpenSourceLevel(LevelAsset);
 
 	UWorld* PreviewWorld = Client->GetPreviewWorld();
-	TestNotNull(TEXT("预览世界存在"), PreviewWorld);
+	TestNotNull(TEXT("The preview world exists"), PreviewWorld);
 
 	if (PreviewWorld)
 	{
@@ -319,18 +319,18 @@ bool FXingyiWorldPartitionDiagnosticTest::RunTest(const FString& Parameters)
 				Bounds += Actor->GetComponentsBoundingBox(/*bNonColliding=*/true);
 			}
 
-			UE_LOG(LogXingyi, Display, TEXT("[诊断] %s | %s | 位置 %s | 网格=%s 灯=%s"),
+			UE_LOG(LogXingyi, Display, TEXT("[Diagnostic] %s | %s | location %s | mesh=%s light=%s"),
 				*Actor->GetClass()->GetName(),
 				*Actor->GetName(),
 				*Actor->GetActorLocation().ToCompactString(),
-				bHasPrimitive ? TEXT("有") : TEXT("无"),
-				bHasLight ? TEXT("有") : TEXT("无"));
+				bHasPrimitive ? TEXT("yes") : TEXT("no"),
+				bHasLight ? TEXT("yes") : TEXT("no"));
 		}
 
-		UE_LOG(LogXingyi, Display, TEXT("[诊断] 预览世界里 Actor 共 %d 个，其中可显示 %d 个"), Total, Renderable);
-		UE_LOG(LogXingyi, Display, TEXT("[诊断] 内容包围盒 %s"),
-			Bounds.IsValid ? *Bounds.ToString() : TEXT("<无效>"));
-		UE_LOG(LogXingyi, Display, TEXT("[诊断] 相机位置 %s / 旋转 %s"),
+		UE_LOG(LogXingyi, Display, TEXT("[Diagnostic] %d actors in the preview world, %d of them displayable"), Total, Renderable);
+		UE_LOG(LogXingyi, Display, TEXT("[Diagnostic] content bounds %s"),
+			Bounds.IsValid ? *Bounds.ToString() : TEXT("<invalid>"));
+		UE_LOG(LogXingyi, Display, TEXT("[Diagnostic] camera location %s / rotation %s"),
 			*Client->GetViewLocation().ToCompactString(),
 			*Client->GetViewRotation().ToCompactString());
 	}

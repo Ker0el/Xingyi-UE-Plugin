@@ -12,6 +12,7 @@
 #include "WorkspaceMenuStructureModule.h"
 #include "WorkspaceMenuStructure.h"
 #include "Styling/AppStyle.h"
+#include "XingyiText.h"
 
 #define LOCTEXT_NAMESPACE "Xingyi"
 
@@ -41,8 +42,8 @@ void FXingyiModule::StartupModule()
 
 	const IWorkspaceMenuStructure& MenuStructure = WorkspaceMenu::GetMenuStructure();
 	const TSharedRef<FWorkspaceItem> MenuGroup = MenuStructure.GetToolsCategory()->AddGroup(
-		LOCTEXT("XingyiMenuGroup", "星移"),
-		LOCTEXT("XingyiMenuTooltip", "打开一个星移面板，把关卡当作素材板浏览。"),
+		XY_TEXT("Xingyi", "星移"),
+		XY_TEXT("Open a Xingyi panel and browse a level as an asset board.", "打开一个星移面板，把关卡当作素材板浏览。"),
 		GetPaneIcon(),
 		/*bSortSubGroups=*/true);
 
@@ -73,7 +74,7 @@ void FXingyiModule::RegisterPane(int32 PaneNumber, const TSharedRef<FWorkspaceIt
 			TabId,
 			FOnSpawnTab::CreateRaw(this, &FXingyiModule::SpawnPane, PaneNumber))
 		.SetDisplayName(MakePaneTitle(PaneNumber))
-		.SetTooltipText(LOCTEXT("XingyiMenuTooltip", "打开一个星移面板，把关卡当作素材板浏览。"))
+		.SetTooltipText(XY_TEXT("Open a Xingyi panel and browse a level as an asset board.", "打开一个星移面板，把关卡当作素材板浏览。"))
 		.SetGroup(MenuGroup)
 		.SetIcon(GetPaneIcon());
 }
@@ -94,7 +95,7 @@ TSharedRef<SDockTab> FXingyiModule::SpawnPane(const FSpawnTabArgs& SpawnTabArgs,
 	// 控件还没销毁完就又拉开）会直接断言崩溃。这里降级成一条开发期提示，照样把新面板建出来。
 	const TWeakPtr<SXingyiPalette>* Existing = LivePanes.Find(MakePaneTabId(PaneNumber));
 	ensureMsgf(!(Existing && Existing->IsValid()),
-		TEXT("星移：%d 号面板的上一个实例还没销毁，这次会再建一个。"), PaneNumber);
+		TEXT("Xingyi: the previous instance of panel %d has not been destroyed yet; creating another one."), PaneNumber);
 
 	const TSharedRef<SXingyiPalette> NewPalette = SNew(SXingyiPalette, PaneNumber);
 	LivePanes.Add(MakePaneTabId(PaneNumber), NewPalette);
@@ -111,7 +112,7 @@ TSharedRef<SDockTab> FXingyiModule::SpawnPane(const FSpawnTabArgs& SpawnTabArgs,
 FText FXingyiModule::MakePaneTitle(int32 PaneNumber) const
 {
 	const FText PaneLabel = FText::Format(
-		LOCTEXT("XingyiPaneLabel", "星移面板{0}"), FText::AsNumber(PaneNumber));
+		XY_TEXT("Xingyi Panel {0}", "星移面板{0}"), FText::AsNumber(PaneNumber));
 
 	const TWeakPtr<SXingyiPalette>* LivePane = LivePanes.Find(MakePaneTabId(PaneNumber));
 	if (LivePane && LivePane->IsValid())
@@ -120,7 +121,7 @@ FText FXingyiModule::MakePaneTitle(int32 PaneNumber) const
 		const FText LevelName = LivePane->Pin()->GetSourceLevelName();
 		if (!LevelName.IsEmpty())
 		{
-			return FText::Format(LOCTEXT("XingyiPaneLabelWithLevel", "{0}：{1}"), PaneLabel, LevelName);
+			return FText::Format(XY_TEXT("{0}: {1}", "{0}：{1}"), PaneLabel, LevelName);
 		}
 	}
 

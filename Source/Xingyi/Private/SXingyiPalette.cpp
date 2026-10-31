@@ -18,6 +18,7 @@
 #include "Widgets/Input/SHyperlink.h"
 #include "DragAndDrop/AssetDragDropOp.h"
 #include "HAL/PlatformProcess.h"
+#include "XingyiText.h"
 
 #define LOCTEXT_NAMESPACE "Xingyi"
 
@@ -76,7 +77,7 @@ void SXingyiPalette::Construct(const FArguments& InArgs, int32 InPaneNumber)
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 					[
 						SNew(STextBlock)
-						.Text(LOCTEXT("EmptyHintTitle", "这个星移面板还没有打开关卡"))
+						.Text(XY_TEXT("No level is open in this Xingyi panel", "这个星移面板还没有打开关卡"))
 						.TextStyle(FAppStyle::Get(), "DetailsView.CategoryTextStyle")
 					]
 
@@ -84,7 +85,7 @@ void SXingyiPalette::Construct(const FArguments& InArgs, int32 InPaneNumber)
 					.Padding(0.0f, 6.0f, 0.0f, 12.0f)
 					[
 						SNew(STextBlock)
-						.Text(LOCTEXT("EmptyHintBody", "挑一个关卡当作素材板，里面的 Actor 点一下就能拖进当前关卡"))
+						.Text(XY_TEXT("Pick a level to use as an asset board; click any actor in it to drag it into the level you are editing", "挑一个关卡当作素材板，里面的 Actor 点一下就能拖进当前关卡"))
 						.ColorAndOpacity(HintTextColor)
 					]
 
@@ -96,7 +97,7 @@ void SXingyiPalette::Construct(const FArguments& InArgs, int32 InPaneNumber)
 						.ButtonContent()
 						[
 							SNew(STextBlock)
-							.Text(LOCTEXT("OpenLevelButton", "打开关卡…"))
+							.Text(XY_TEXT("Open Level...", "打开关卡…"))
 						]
 					]
 
@@ -104,7 +105,7 @@ void SXingyiPalette::Construct(const FArguments& InArgs, int32 InPaneNumber)
 					.Padding(0.0f, 12.0f, 0.0f, 0.0f)
 					[
 						SNew(STextBlock)
-						.Text(LOCTEXT("EmptyHintDrag", "也可以直接把内容浏览器里的关卡资产拖到本面板上"))
+						.Text(XY_TEXT("You can also drag a level asset from the Content Browser onto this panel", "也可以直接把内容浏览器里的关卡资产拖到本面板上"))
 						.ColorAndOpacity(HintFaintColor)
 					]
 				]
@@ -127,35 +128,35 @@ void SXingyiPalette::Construct(const FArguments& InArgs, int32 InPaneNumber)
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 					[
 						SNew(STextBlock)
-						.Text(LOCTEXT("PreviewEmptyTitle", "这个关卡在面板里没有可预览的 Actor"))
+						.Text(XY_TEXT("This level has no previewable actors in the panel", "这个关卡在面板里没有可预览的 Actor"))
 						.TextStyle(FAppStyle::Get(), "DetailsView.CategoryTextStyle")
 					]
 
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.0f, 10.0f, 0.0f, 0.0f)
 					[
 						SNew(STextBlock)
-						.Text(LOCTEXT("PreviewEmptyLine1", "World Partition（开放世界）关卡的内容存放在外部 Actor 文件里，"))
+						.Text(XY_TEXT("World Partition levels keep their content in external actor files,", "World Partition（开放世界）关卡的内容存放在外部 Actor 文件里，"))
 						.ColorAndOpacity(HintTextColor)
 					]
 
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 					[
 						SNew(STextBlock)
-						.Text(LOCTEXT("PreviewEmptyLine2", "由流送系统按区域加载。面板已经试着把它全部加载出来，但没拿到东西。"))
+						.Text(XY_TEXT("loaded by region by the streaming system. The panel tried to load everything but found nothing.", "由流送系统按区域加载。面板已经试着把它全部加载出来，但没拿到东西。"))
 						.ColorAndOpacity(HintTextColor)
 					]
 
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.0f, 10.0f, 0.0f, 0.0f)
 					[
 						SNew(STextBlock)
-						.Text(LOCTEXT("PreviewEmptyLine3", "请换一个普通关卡当素材板；"))
+						.Text(XY_TEXT("Please use a regular level as the asset board;", "请换一个普通关卡当素材板；"))
 						.ColorAndOpacity(HintWarnColor)
 					]
 
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 					[
 						SNew(STextBlock)
-						.Text(LOCTEXT("PreviewEmptyLine4", "或者把要用的 Actor 先复制到一个普通关卡里，再用面板打开那个关卡。"))
+						.Text(XY_TEXT("or copy the actors you need into a regular level first, then open that level in the panel.", "或者把要用的 Actor 先复制到一个普通关卡里，再用面板打开那个关卡。"))
 						.ColorAndOpacity(HintWarnColor)
 					]
 				]
@@ -206,8 +207,8 @@ void SXingyiPalette::Construct(const FArguments& InArgs, int32 InPaneNumber)
 				.VAlign(VAlign_Center)
 				[
 					SNew(SHyperlink)
-					.Text(LOCTEXT("AuthorLink", "作者：星空"))
-					.ToolTipText(LOCTEXT("AuthorLinkTooltip", "打开作者的 B 站主页"))
+					.Text(XY_TEXT("Author: StarGame", "作者：星空"))
+					.ToolTipText(XY_TEXT("Open the author's Bilibili page", "打开作者的 B 站主页"))
 					.OnNavigate(FSimpleDelegate::CreateLambda([]()
 					{
 						FPlatformProcess::LaunchURL(TEXT("https://space.bilibili.com/177308205"), nullptr, nullptr);
@@ -241,8 +242,8 @@ FText SXingyiPalette::GetLevelLabel() const
 	const FText LevelName = GetSourceLevelName();
 
 	return LevelName.IsEmpty()
-		? LOCTEXT("LevelLabelNone", "当前关卡：未选择")
-		: FText::Format(LOCTEXT("LevelLabel", "当前关卡：{0}"), LevelName);
+		? XY_TEXT("Current level: none selected", "当前关卡：未选择")
+		: FText::Format(XY_TEXT("Current level: {0}", "当前关卡：{0}"), LevelName);
 }
 
 FText SXingyiPalette::GetLightingLabel() const
@@ -253,13 +254,13 @@ FText SXingyiPalette::GetLightingLabel() const
 	}
 
 	FText Status = FText::Format(
-		LOCTEXT("LightingLabel", "预览光照：{0}"), ViewportClient->GetLightingStatusText());
+		XY_TEXT("Preview lighting: {0}", "预览光照：{0}"), ViewportClient->GetLightingStatusText());
 
 	if (ViewportClient->IsSourceLevelPartitioned())
 	{
 		// 说清楚为什么这个关卡里东西这么少，别让用户以为坏了
 		Status = FText::Format(
-			LOCTEXT("LightingLabelPartitioned", "{0}    World Partition 关卡：只显示始终加载的部分"),
+			XY_TEXT("{0}    World Partition level: only the always-loaded part is shown", "{0}    World Partition 关卡：只显示始终加载的部分"),
 			Status);
 	}
 
@@ -276,7 +277,7 @@ FText SXingyiPalette::GetStatusHint() const
 	// 普通模式：和以前一样，一句话说明白就够了
 	if (!ViewportClient->IsMultiSelectMode())
 	{
-		return LOCTEXT("StatusHintNormal", "左键点 Actor 直接拖进关卡");
+		return XY_TEXT("Click an actor to drag it into the level", "左键点 Actor 直接拖进关卡");
 	}
 
 	// 多选模式：把当前选了几个、下一步该干什么写清楚
@@ -284,11 +285,11 @@ FText SXingyiPalette::GetStatusHint() const
 	if (SelectedCount > 0)
 	{
 		return FText::Format(
-			LOCTEXT("StatusHintMultiSelected", "已选 {0} 个 · 拖动其中一个放入 · Ctrl+点移出"),
+			XY_TEXT("{0} selected - drag one of them to place - Ctrl+click to remove", "已选 {0} 个 · 拖动其中一个放入 · Ctrl+点移出"),
 			FText::AsNumber(SelectedCount));
 	}
 
-	return LOCTEXT("StatusHintMultiEmpty", "多选：点 Actor 加进选中");
+	return XY_TEXT("Multi-select: click actors to add them to the selection", "多选：点 Actor 加进选中");
 }
 
 EVisibility SXingyiPalette::GetEmptyHintVisibility() const
@@ -311,13 +312,13 @@ TSharedRef<SWidget> SXingyiPalette::BuildLevelMenu()
 {
 	if (!ViewportClient.IsValid())
 	{
-		return SNew(STextBlock).Text(LOCTEXT("PaneNotReady", "面板还没准备好"));
+		return SNew(STextBlock).Text(XY_TEXT("The panel is not ready yet", "面板还没准备好"));
 	}
 
 	const TSharedPtr<SXingyiViewport> LiveViewport = Viewport;
 	if (!LiveViewport.IsValid())
 	{
-		return SNew(STextBlock).Text(LOCTEXT("PaneNotReady", "面板还没准备好"));
+		return SNew(STextBlock).Text(XY_TEXT("The panel is not ready yet", "面板还没准备好"));
 	}
 
 	return XingyiMapMenu::Build(
@@ -359,7 +360,7 @@ FReply SXingyiPalette::OnDrop(const FGeometry& MyGeometry, const FDragDropEvent&
 
 	if (Viewport.IsValid())
 	{
-		UE_LOG(LogXingyi, Display, TEXT("星移：拖放载入关卡 %s（面板层收到）"), *DroppedLevel.GetObjectPathString());
+		UE_LOG(LogXingyi, Display, TEXT("Xingyi: level %s loaded by drag and drop (received by the panel)"), *DroppedLevel.GetObjectPathString());
 		Viewport->OpenLevel(DroppedLevel);
 		return FReply::Handled();
 	}

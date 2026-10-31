@@ -114,8 +114,8 @@ namespace
 			PlaceRelativeTo(Pair.Key, Pair.Value, AnchorPlaced, GAnchorRotation);
 		}
 
-		UE_LOG(LogXingyi, Display, TEXT("星移：成组拖拽收尾，摆了 %d 个（基准 %s）。"),
-			GCollected.Num(), IsValid(AnchorPlaced) ? *AnchorPlaced->GetName() : TEXT("<无>"));
+		UE_LOG(LogXingyi, Display, TEXT("Xingyi: group drag finished, placed %d actors (anchor %s)."),
+			GCollected.Num(), IsValid(AnchorPlaced) ? *AnchorPlaced->GetName() : TEXT("<none>"));
 
 		GCollected.Reset();
 	}
@@ -189,7 +189,7 @@ namespace
 		Queue->RemoveAt(0, Take, EAllowShrinking::No);
 		GRemaining -= Take;
 
-		UE_LOG(LogXingyi, Display, TEXT("星移：收到放置 %s —— 放下 %d 个，收下 %d 个，还差 %d 个。"),
+		UE_LOG(LogXingyi, Display, TEXT("Xingyi: placement received for %s - dropped %d, placed %d, still missing %d."),
 			*Asset->GetName(), PlacedActors.Num(), Take, GRemaining);
 
 		// 全收齐了就当场摆 —— 这样不会出现"先叠在光标上、下一帧才散开"的一帧跳变
@@ -243,7 +243,7 @@ void Flush()
 	// 可能有资产没放下（收不齐），这时候把已经收到的先摆好，剩下的不管了
 	if (GRemaining > 0 && GCollected.Num() > 0)
 	{
-		UE_LOG(LogXingyi, Display, TEXT("星移：成组拖拽收尾（拖拽已结束，还差 %d 个没收到）。"), GRemaining);
+		UE_LOG(LogXingyi, Display, TEXT("Xingyi: group drag finished (drag ended, %d placement(s) never received)."), GRemaining);
 	}
 
 	ApplyCollected();

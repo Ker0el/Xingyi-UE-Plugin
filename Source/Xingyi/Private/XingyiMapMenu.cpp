@@ -13,6 +13,7 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Widgets/Layout/SBox.h"
+#include "XingyiText.h"
 
 #define LOCTEXT_NAMESPACE "Xingyi"
 
@@ -46,7 +47,7 @@ namespace
 					{
 						SubMenuBuilder.AddMenuEntry(
 							XingyiCommon::GetLevelDisplayName(Level),
-							FText::Format(LOCTEXT("UseAsPaletteTooltip", "把 {0} 当作素材板"),
+							FText::Format(XY_TEXT("Use {0} as an asset board", "把 {0} 当作素材板"),
 								XingyiCommon::GetLevelPackageName(Level)),
 							FSlateIcon(),
 							FUIAction(FExecuteAction::CreateLambda([Level, OnLevelChosen]()
@@ -62,13 +63,13 @@ FText XingyiMapMenu::DescribePinAction(const FAssetData& CurrentLevel)
 {
 	if (!CurrentLevel.IsValid())
 	{
-		return LOCTEXT("PinActionNoLevel", "收藏 / 取消收藏");
+		return XY_TEXT("Favorite / Unfavorite", "收藏 / 取消收藏");
 	}
 
 	const bool bAlreadyPinned = GetDefault<UXingyiSettings>()->IsLevelPinned(CurrentLevel);
 	return bAlreadyPinned
-		? FText::Format(LOCTEXT("UnpinLevel", "取消收藏 {0}"), XingyiCommon::GetLevelDisplayName(CurrentLevel))
-		: FText::Format(LOCTEXT("PinLevel", "收藏 {0}"), XingyiCommon::GetLevelDisplayName(CurrentLevel));
+		? FText::Format(XY_TEXT("Unfavorite {0}", "取消收藏 {0}"), XingyiCommon::GetLevelDisplayName(CurrentLevel))
+		: FText::Format(XY_TEXT("Favorite {0}", "收藏 {0}"), XingyiCommon::GetLevelDisplayName(CurrentLevel));
 }
 
 TSharedRef<SWidget> XingyiMapMenu::Build(const FAssetData& CurrentLevel, FXingyiOnLevelChosen OnLevelChosen)
@@ -78,8 +79,8 @@ TSharedRef<SWidget> XingyiMapMenu::Build(const FAssetData& CurrentLevel, FXingyi
 
 	// ---- 浏览任意关卡 ----
 	MenuBuilder.AddSubMenu(
-		LOCTEXT("BrowseLevels", "浏览关卡…"),
-		LOCTEXT("BrowseLevelsTooltip", "从内容浏览器里挑一个关卡当素材板"),
+		XY_TEXT("Browse Levels...", "浏览关卡…"),
+		XY_TEXT("Pick a level from the Content Browser to use as an asset board", "从内容浏览器里挑一个关卡当素材板"),
 		FNewMenuDelegate::CreateLambda([CurrentLevel, OnLevelChosen](FMenuBuilder& SubMenuBuilder)
 		{
 			FContentBrowserModule& ContentBrowserModule =
@@ -99,7 +100,7 @@ TSharedRef<SWidget> XingyiMapMenu::Build(const FAssetData& CurrentLevel, FXingyi
 					OnLevelChosen.ExecuteIfBound(ChosenLevel);
 				});
 
-			SubMenuBuilder.BeginSection("XingyiBrowse", LOCTEXT("BrowseSection", "浏览"));
+			SubMenuBuilder.BeginSection("XingyiBrowse", XY_TEXT("Browse", "浏览"));
 			SubMenuBuilder.AddWidget(
 				SNew(SBox)
 				.WidthOverride(AssetPickerSize)
@@ -125,9 +126,9 @@ TSharedRef<SWidget> XingyiMapMenu::Build(const FAssetData& CurrentLevel, FXingyi
 			}
 
 			MenuBuilder.AddMenuEntry(
-				FText::Format(LOCTEXT("OpenSelectedLevel", "打开 {0}（内容浏览器选中项）"),
+				FText::Format(XY_TEXT("Open {0} (Content Browser selection)", "打开 {0}（内容浏览器选中项）"),
 					XingyiCommon::GetLevelDisplayName(Asset)),
-				FText::Format(LOCTEXT("UseAsPaletteTooltip", "把 {0} 当作素材板"),
+				FText::Format(XY_TEXT("Use {0} as an asset board", "把 {0} 当作素材板"),
 					XingyiCommon::GetLevelPackageName(Asset)),
 				FSlateIcon(),
 				FUIAction(FExecuteAction::CreateLambda([Asset, OnLevelChosen]()
@@ -164,9 +165,9 @@ TSharedRef<SWidget> XingyiMapMenu::Build(const FAssetData& CurrentLevel, FXingyi
 	TArray<FAssetData> RecentLevels;
 	ResolveRecords(RecentRecords, RecentLevels);
 	AddLevelListSubMenu(MenuBuilder,
-		LOCTEXT("RecentLevels", "最近打开"),
-		LOCTEXT("RecentLevelsTooltip", "最近在星移面板里打开过的关卡"),
-		LOCTEXT("NoRecentLevels", "还没有打开过任何关卡"),
+		XY_TEXT("Recent", "最近打开"),
+		XY_TEXT("Levels opened in a Xingyi panel recently", "最近在星移面板里打开过的关卡"),
+		XY_TEXT("No levels opened yet", "还没有打开过任何关卡"),
 		RecentLevels, OnLevelChosen);
 
 	TArray<FXingyiLevelRecord> PinnedRecords;
@@ -175,9 +176,9 @@ TSharedRef<SWidget> XingyiMapMenu::Build(const FAssetData& CurrentLevel, FXingyi
 	TArray<FAssetData> PinnedLevels;
 	ResolveRecords(PinnedRecords, PinnedLevels);
 	AddLevelListSubMenu(MenuBuilder,
-		LOCTEXT("PinnedLevels", "收藏"),
-		LOCTEXT("PinnedLevelsTooltip", "标记为收藏的关卡"),
-		LOCTEXT("NoPinnedLevels", "还没有收藏任何关卡"),
+		XY_TEXT("Favorites", "收藏"),
+		XY_TEXT("Levels marked as favorites", "标记为收藏的关卡"),
+		XY_TEXT("No favorite levels yet", "还没有收藏任何关卡"),
 		PinnedLevels, OnLevelChosen);
 
 	// ---- 收藏 / 取消收藏当前这个 ----

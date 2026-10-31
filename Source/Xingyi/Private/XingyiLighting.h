@@ -21,13 +21,13 @@ UENUM()
 enum class EXingyiFallbackLightMode : uint8
 {
 	/** 关卡自己带光源就用关卡的光照，只有关卡完全没光时才点亮兜底光 */
-	Auto UMETA(DisplayName = "自动（关卡没光时才点亮）"),
+	Auto UMETA(DisplayName = "Auto (on only when the level has no lights)"),
 
 	/** 始终点亮兜底光，预览亮度和官方版一致（默认） */
-	AlwaysOn UMETA(DisplayName = "始终点亮"),
+	AlwaysOn UMETA(DisplayName = "Always On"),
 
 	/** 始终关闭兜底光，完全使用关卡自己的光照 */
-	AlwaysOff UMETA(DisplayName = "始终关闭")
+	AlwaysOff UMETA(DisplayName = "Always Off")
 };
 
 namespace XingyiLighting

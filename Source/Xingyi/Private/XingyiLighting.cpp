@@ -2,6 +2,7 @@
 // 星移 Xingyi —— 预览光照策略（实现）
 
 #include "XingyiLighting.h"
+#include "XingyiText.h"
 
 #define LOCTEXT_NAMESPACE "Xingyi"
 
@@ -32,14 +33,14 @@ FText DescribeMode(EXingyiFallbackLightMode Mode)
 	switch (Mode)
 	{
 	case EXingyiFallbackLightMode::AlwaysOn:
-		return LOCTEXT("LightModeAlwaysOn", "始终点亮");
+		return XY_TEXT("Always On", "始终点亮");
 
 	case EXingyiFallbackLightMode::AlwaysOff:
-		return LOCTEXT("LightModeAlwaysOff", "始终关闭");
+		return XY_TEXT("Always Off", "始终关闭");
 
 	case EXingyiFallbackLightMode::Auto:
 	default:
-		return LOCTEXT("LightModeAuto", "自动");
+		return XY_TEXT("Auto", "自动");
 	}
 }
 

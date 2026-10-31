@@ -15,6 +15,7 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Misc/ScopedSlowTask.h"
+#include "XingyiText.h"
 
 #define LOCTEXT_NAMESPACE "Xingyi"
 
@@ -88,7 +89,7 @@ EXingyiLevelLoadResult FXingyiSourceLevel::Load(const FAssetData& InLevelAsset)
 		return EXingyiLevelLoadResult::NotALevelAsset;
 	}
 
-	FScopedSlowTask SlowTask(0.0f, LOCTEXT("LoadingLevelAsPalette", "正在把关卡载入星移面板…"));
+	FScopedSlowTask SlowTask(0.0f, XY_TEXT("Loading level into the Xingyi panel...", "正在把关卡载入星移面板…"));
 
 	bool bLoadSucceeded = false;
 	ULevelStreamingDynamic* NewLevel = ULevelStreamingDynamic::LoadLevelInstance(

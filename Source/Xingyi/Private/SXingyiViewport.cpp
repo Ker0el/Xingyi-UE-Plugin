@@ -17,6 +17,7 @@
 #include "Widgets/Input/SComboButton.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "DragAndDrop/AssetDragDropOp.h"
+#include "XingyiText.h"
 
 #define LOCTEXT_NAMESPACE "Xingyi"
 
@@ -58,8 +59,8 @@ TSharedPtr<SWidget> SXingyiViewport::BuildViewportToolbar()
 				.ButtonContent()
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("SelectLevel", "选择关卡"))
-					.ToolTipText(LOCTEXT("SelectLevelTooltip", "挑一个关卡当作素材板，也可以直接从内容浏览器拖关卡进来"))
+					.Text(XY_TEXT("Select Level", "选择关卡"))
+					.ToolTipText(XY_TEXT("Pick a level to use as an asset board, or drag a level in from the Content Browser", "挑一个关卡当作素材板，也可以直接从内容浏览器拖关卡进来"))
 				]
 			]
 
@@ -71,8 +72,8 @@ TSharedPtr<SWidget> SXingyiViewport::BuildViewportToolbar()
 			[
 				SNew(SButton)
 				.OnClicked(this, &SXingyiViewport::OnReloadClicked)
-				.Text(LOCTEXT("Reload", "重载"))
-				.ToolTipText(LOCTEXT("ReloadTooltip", "重新载入这个面板上次打开过的关卡"))
+				.Text(XY_TEXT("Reload", "重载"))
+				.ToolTipText(XY_TEXT("Reload the level this panel opened last time", "重新载入这个面板上次打开过的关卡"))
 			]
 
 			// 收藏 / 取消收藏
@@ -83,7 +84,7 @@ TSharedPtr<SWidget> SXingyiViewport::BuildViewportToolbar()
 			[
 				SNew(SButton)
 				.OnClicked(this, &SXingyiViewport::OnTogglePinClicked)
-				.ToolTipText(LOCTEXT("PinTooltip", "把当前关卡加入收藏 / 从收藏里移除"))
+				.ToolTipText(XY_TEXT("Add or remove the current level from favorites", "把当前关卡加入收藏 / 从收藏里移除"))
 				[
 					SNew(STextBlock)
 					.Text(this, &SXingyiViewport::GetPinButtonLabel)
@@ -101,8 +102,8 @@ TSharedPtr<SWidget> SXingyiViewport::BuildViewportToolbar()
 				.ButtonContent()
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("Lighting", "光照"))
-					.ToolTipText(LOCTEXT("LightingTooltip", "预览场景的光照策略：关卡自带光源时用关卡的光，关卡没光源时才点亮兜底光"))
+					.Text(XY_TEXT("Lighting", "光照"))
+					.ToolTipText(XY_TEXT("Preview lighting strategy: use the level's own lights when it has them, light the fallback sun only when it has none", "预览场景的光照策略：关卡自带光源时用关卡的光，关卡没光源时才点亮兜底光"))
 				]
 			]
 
@@ -115,10 +116,10 @@ TSharedPtr<SWidget> SXingyiViewport::BuildViewportToolbar()
 				SNew(SCheckBox)
 				.IsChecked(this, &SXingyiViewport::GetRealtimeState)
 				.OnCheckStateChanged(this, &SXingyiViewport::OnRealtimeChanged)
-				.ToolTipText(LOCTEXT("RealtimeTooltip", "勾上才会真的实时刷新预览（粒子、动画、贴图流送）"))
+				.ToolTipText(XY_TEXT("Turn on to actually refresh the preview in real time (particles, animation, texture streaming)", "勾上才会真的实时刷新预览（粒子、动画、贴图流送）"))
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("Realtime", "实时"))
+					.Text(XY_TEXT("Realtime", "实时"))
 				]
 			]
 
@@ -130,14 +131,14 @@ TSharedPtr<SWidget> SXingyiViewport::BuildViewportToolbar()
 			[
 				SNew(SButton)
 				.OnClicked(this, &SXingyiViewport::OnToggleGameViewClicked)
-				.ToolTipText(LOCTEXT("GameViewTooltip", "按游戏视图显示（隐藏编辑器辅助显示）"))
+				.ToolTipText(XY_TEXT("Show in game view (hides editor helpers)", "按游戏视图显示（隐藏编辑器辅助显示）"))
 				[
 					SNew(STextBlock)
 					.Text_Lambda([this]()
 					{
 						return IsGameViewOn()
-							? LOCTEXT("GameViewOn", "游戏视图 ✓")
-							: LOCTEXT("GameViewOff", "游戏视图");
+							? XY_TEXT("Game View ✓", "游戏视图 ✓")
+							: XY_TEXT("Game View", "游戏视图");
 					})
 				]
 			]
@@ -150,8 +151,8 @@ TSharedPtr<SWidget> SXingyiViewport::BuildViewportToolbar()
 			[
 				SNew(SButton)
 				.OnClicked(this, &SXingyiViewport::OnResetCameraClicked)
-				.Text(LOCTEXT("ResetCamera", "重置相机"))
-				.ToolTipText(LOCTEXT("ResetCameraTooltip", "回到这个关卡保存时的相机位置"))
+				.Text(XY_TEXT("Reset Camera", "重置相机"))
+				.ToolTipText(XY_TEXT("Return to the camera position stored in this level", "回到这个关卡保存时的相机位置"))
 			]
 
 			// 多选
@@ -163,11 +164,10 @@ TSharedPtr<SWidget> SXingyiViewport::BuildViewportToolbar()
 				SNew(SCheckBox)
 				.IsChecked(this, &SXingyiViewport::GetMultiSelectState)
 				.OnCheckStateChanged(this, &SXingyiViewport::OnMultiSelectChanged)
-				.ToolTipText(LOCTEXT("MultiSelectTooltip",
-					"多选：点没选中的 Actor 把它加进选中；点已选中的就把这一组一起拖进关卡。Ctrl + 点可以移出选中"))
+				.ToolTipText(XY_TEXT("Multi-select: click an unselected actor to add it; click a selected one to drag the group into the level. Ctrl + click removes it from the selection", "多选：点没选中的 Actor 把它加进选中；点已选中的就把这一组一起拖进关卡。Ctrl + 点可以移出选中"))
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("MultiSelect", "多选模式"))
+					.Text(XY_TEXT("Multi-Select", "多选模式"))
 				]
 			]
 
@@ -179,9 +179,8 @@ TSharedPtr<SWidget> SXingyiViewport::BuildViewportToolbar()
 			[
 				SNew(SButton)
 				.OnClicked(this, &SXingyiViewport::OnClearSelectionClicked)
-				.Text(LOCTEXT("ClearSelection", "清空选中"))
-				.ToolTipText(LOCTEXT("ClearSelectionTooltip",
-					"清空面板里的选中。关卡里满天都是天空球、大气和体积框，想靠点空处来清空基本点不到，所以单给一个按钮"))
+				.Text(XY_TEXT("Clear Selection", "清空选中"))
+				.ToolTipText(XY_TEXT("Clears the selection in the panel. Levels are full of sky spheres, atmosphere and volumes, so clicking empty space is not a reliable way to clear it - hence a dedicated button", "清空面板里的选中。关卡里满天都是天空球、大气和体积框，想靠点空处来清空基本点不到，所以单给一个按钮"))
 			]
 		];
 }
@@ -200,7 +199,7 @@ TSharedRef<SWidget> SXingyiViewport::BuildLightingMenu()
 	FMenuBuilder MenuBuilder(/*bInShouldCloseWindowAfterMenuSelection=*/true, nullptr);
 	const UXingyiSettings* Settings = GetDefault<UXingyiSettings>();
 
-	MenuBuilder.BeginSection("XingyiLightingMode", LOCTEXT("LightingSection", "预览光照"));
+	MenuBuilder.BeginSection("XingyiLightingMode", XY_TEXT("Preview Lighting", "预览光照"));
 	{
 		auto AddLightModeEntry = [this, &MenuBuilder, Settings](
 			EXingyiFallbackLightMode Mode, const FText& Tooltip)
@@ -221,17 +220,17 @@ TSharedRef<SWidget> SXingyiViewport::BuildLightingMenu()
 		};
 
 		AddLightModeEntry(EXingyiFallbackLightMode::Auto,
-			LOCTEXT("LightModeAutoTip", "关卡自带光源时完全使用关卡的光照，观感和关卡一致"));
+			XY_TEXT("When the level has its own lights, use them exclusively - the preview matches the level", "关卡自带光源时完全使用关卡的光照，观感和关卡一致"));
 		AddLightModeEntry(EXingyiFallbackLightMode::AlwaysOn,
-			LOCTEXT("LightModeAlwaysOnTip", "兜底灯一直亮着。它永远排最低优先级，不会和关卡的太阳打架"));
+			XY_TEXT("The fallback light stays on. It always sits at the lowest priority, so it never competes with the level's sun", "兜底灯一直亮着。它永远排最低优先级，不会和关卡的太阳打架"));
 		AddLightModeEntry(EXingyiFallbackLightMode::AlwaysOff,
-			LOCTEXT("LightModeAlwaysOffTip", "完全使用关卡自己的光照，一点补光都不加"));
+			XY_TEXT("Use only the level's own lighting, with no fill light at all", "完全使用关卡自己的光照，一点补光都不加"));
 	}
 	MenuBuilder.EndSection();
 
-	MenuBuilder.BeginSection("XingyiDisplay", LOCTEXT("DisplaySection", "显示"));
+	MenuBuilder.BeginSection("XingyiDisplay", XY_TEXT("Display", "显示"));
 	{
-		MenuBuilder.AddMenuEntry(LOCTEXT("ShowGrid", "显示地面网格"), FText::GetEmpty(), FSlateIcon(),
+		MenuBuilder.AddMenuEntry(XY_TEXT("Show Ground Grid", "显示地面网格"), FText::GetEmpty(), FSlateIcon(),
 			FUIAction(
 				FExecuteAction::CreateLambda([this]()
 				{
@@ -241,8 +240,8 @@ TSharedRef<SWidget> SXingyiViewport::BuildLightingMenu()
 				FIsActionChecked::CreateLambda([Settings]() { return Settings->bShowGrid; })),
 			NAME_None, EUserInterfaceActionType::ToggleButton);
 
-		MenuBuilder.AddMenuEntry(LOCTEXT("ShowBillboards", "显示公告板精灵"),
-			LOCTEXT("ShowBillboardsTip", "粒子、材质球这类精灵图标；关掉它们会看不见"),
+		MenuBuilder.AddMenuEntry(XY_TEXT("Show Billboard Sprites", "显示公告板精灵"),
+			XY_TEXT("Sprite icons for particles and material spheres; they become invisible when turned off", "粒子、材质球这类精灵图标；关掉它们会看不见"),
 			FSlateIcon(),
 			FUIAction(
 				FExecuteAction::CreateLambda([this]()
@@ -253,8 +252,8 @@ TSharedRef<SWidget> SXingyiViewport::BuildLightingMenu()
 				FIsActionChecked::CreateLambda([Settings]() { return Settings->bShowBillboardSprites; })),
 			NAME_None, EUserInterfaceActionType::ToggleButton);
 
-		MenuBuilder.AddMenuEntry(LOCTEXT("PerformanceMode", "性能模式"),
-			LOCTEXT("PerformanceModeTip", "关闭 Lumen 等高级特性换取帧率，会改变预览观感"),
+		MenuBuilder.AddMenuEntry(XY_TEXT("Performance Mode", "性能模式"),
+			XY_TEXT("Turns off advanced features such as Lumen for a higher frame rate; changes how the preview looks", "关闭 Lumen 等高级特性换取帧率，会改变预览观感"),
 			FSlateIcon(),
 			FUIAction(
 				FExecuteAction::CreateLambda([this]()
@@ -267,11 +266,11 @@ TSharedRef<SWidget> SXingyiViewport::BuildLightingMenu()
 	}
 	MenuBuilder.EndSection();
 
-	MenuBuilder.BeginSection("XingyiHint", LOCTEXT("HintSection", "当前状态"));
+	MenuBuilder.BeginSection("XingyiHint", XY_TEXT("Current State", "当前状态"));
 	{
 		// 一条不可点的说明，告诉用户强度、角度这些去哪儿调
 		MenuBuilder.AddMenuEntry(
-			LOCTEXT("LightingSettingsHint", "阳光强度、角度等项目设置 → 插件 → 星移"),
+			XY_TEXT("Sun intensity and angle: Project Settings - Plugins - Xingyi", "阳光强度、角度等项目设置 → 插件 → 星移"),
 			FText::GetEmpty(),
 			FSlateIcon(),
 			FUIAction(FExecuteAction(), FCanExecuteAction::CreateLambda([]() { return false; })));
@@ -379,12 +378,12 @@ FText SXingyiViewport::GetPinButtonLabel() const
 
 	if (!CurrentLevel.IsValid())
 	{
-		return LOCTEXT("Pin", "收藏");
+		return XY_TEXT("Favorite", "收藏");
 	}
 
 	return GetDefault<UXingyiSettings>()->IsLevelPinned(CurrentLevel)
-		? LOCTEXT("Pinned", "已收藏")
-		: LOCTEXT("Pin", "收藏");
+		? XY_TEXT("Favorited", "已收藏")
+		: XY_TEXT("Favorite", "收藏");
 }
 
 ECheckBoxState SXingyiViewport::GetRealtimeState() const
@@ -471,7 +470,7 @@ FReply SXingyiViewport::OnDrop(const FGeometry& MyGeometry, const FDragDropEvent
 	{
 		if (XingyiCommon::IsLevelAsset(Asset))
 		{
-			UE_LOG(LogXingyi, Display, TEXT("星移：拖放载入关卡 %s（视口层收到）"), *Asset.GetObjectPathString());
+			UE_LOG(LogXingyi, Display, TEXT("Xingyi: level %s loaded by drag and drop (received by the viewport)"), *Asset.GetObjectPathString());
 			OpenLevel(Asset);
 			return FReply::Handled();
 		}

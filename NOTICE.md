@@ -1,80 +1,89 @@
-# 署名与许可声明 · NOTICE
+# Credits and license · NOTICE
 
-星移（Xingyi）是一个 Unreal Engine 编辑器插件，采用 **MIT** 许可（全文见 [LICENSE](LICENSE)）——
-商业使用、修改、再分发都不受限制。
+Xingyi is an Unreal Engine editor plugin released under the **MIT** license (full text in
+[LICENSE](LICENSE)) - commercial use, modification and redistribution are unrestricted.
 
-Copyright 2026 StarGame（星空 / Ker0el）. All Rights Reserved.
+Copyright 2026 StarGame. All Rights Reserved.
 
-英文说明见 [Docs/README_EN.md](Docs/README_EN.md)。
-
----
-
-## 1. 与 UE 自带 Actor Palette 的关系
-
-星移在功能定位上对标 Unreal Engine 自带的实验性插件 **Actor Palette**
-（`Engine/Plugins/Experimental/ActorPalette/`）：两者都是把任意关卡当作素材板，
-在其中浏览 Actor 并拖进当前关卡编辑。星移修掉了原版几个实际会踩到的问题，
-并且加了多选模式与成组拖入（见第 2 节）。
-
-代码是另行实现的，不含 Actor Palette 的源代码。
+A Chinese translation of the user guide is available on GitHub:
+<https://github.com/Ker0el/Xingyi-UE-Plugin/blob/main/Docs/README_ZH.md>.
 
 ---
 
-## 2. 改进与新增
+## 1. Relationship to the engine's Actor Palette plugin
 
-**修复**（都是 Actor Palette 上实际会踩到的问题）
+Xingyi addresses the same use case as the experimental **Actor Palette** plugin that ships with Unreal
+Engine (`Engine/Plugins/Experimental/ActorPalette/`): both treat an arbitrary level as an asset board,
+let you browse its actors and drag them into the level being edited.
 
-- **预览光照打架**：原版预览场景自带一盏太阳，优先级与关卡里的太阳相同，
-  渲染器会报「多个定向光源正在竞争成为唯一一个用于前向着色、半透明、水或体积雾的光源」，
-  而且提示会一直挂在视口上。星移把自带那盏钉在**最低优先级**，从根上不可能打平。
-- **空指针崩溃**：原版点击面板时若控件不在窗口里，`ToSharedRef()` 会空指针崩溃；
-  重复打开同一个面板会 `check()` 断言崩溃。星移全部改为判空，断言降级成提示。
-- **跨世界选中残留**：原版点选面板里的 Actor 会把它塞进编辑器选中集且从不清理
-  （按 Delete 删掉的是面板里那份，关卡里那份还在）。星移在拖拽结束、换关卡、关面板、
-  清空选中、切模式时都会自动摘干净。
-- **描边不消**：清掉选中之后，面板里的橙色描边还挂在那儿。面板的预览世界和关卡是两个世界，
-  `GEditor->NoteSelectionChange()` 只重画关卡视口，而面板是独立的视口客户端、默认不实时。
-  星移把重画放进了清空函数的内部，所有路径都覆盖得到。
-- **空关卡全黑**：原版打开一个没有光源的关卡是全黑的。星移会点亮兜底光。
-
-**新增**
-
-- **多选模式**：点没选中的 Actor 加进选中，点已选中的把整组一起拖出去，
-  并保持它们之间的相对位置和朝向；每个 Actor 的实例缩放也照搬。
-- **「清空选中」按钮**：关卡里满天都是天空球、大气和体积框，靠点空处清空基本点不到。
-- 底部状态条显示当前关卡、光照来源和已选数量。
-- 把关卡资产**直接拖到面板上**即可打开。
-- 空状态引导；最多 4 个面板同时打开、各自独立。
-- 设置项：兜底光模式 / 强度 / 角度、地面网格、公告板精灵、性能模式、
-  打开后是否框住内容。
-- 4 个自动化测试（光照判定 / 最近与收藏 / 视口构造冒烟 / World Partition 诊断）。
+Xingyi's source code is an independent implementation and contains no Actor Palette source code.
 
 ---
 
-## 3. 已知限制
+## 2. Improvements and additions
 
-- **World Partition（开放世界）关卡只能看到「始终加载」的那一部分**。关卡主体内容存放在
-  外部 Actor 文件里，由流送系统按区域加载，而预览世界跑不到那套流送 —— 这是引擎层面的
-  限制，原版 Actor Palette 同样如此。想用这类关卡里的东西，先把要用的 Actor
-  复制到一个普通关卡里，再打开那个关卡。
+**Fixes** (behaviour that the Actor Palette plugin exposes in practice)
+
+- **Competing preview lighting**: the preview scene brings its own sun at the same priority as the sun in
+  the opened level, so the renderer reports "multiple directional lights are competing to be the single
+  one used for forward shading, translucency, water or volumetric fog" and the message stays pinned to the
+  viewport. Xingyi pins its own light to the **lowest priority**, so the two can never tie.
+- **Null-pointer crashes**: clicking the panel while its widget is outside a window crashed in
+  `ToSharedRef()`, and reopening the same panel tripped a `check()` assertion. Xingyi null-checks every
+  path and downgrades assertions to notices.
+- **Stale cross-world selection**: selecting an actor in the panel added it to the editor selection and
+  never removed it (Delete removed the panel copy while the level copy remained). Xingyi clears the
+  selection when a drag ends, the level changes, the panel closes, the selection is cleared or the mode
+  changes.
+- **Outline not clearing**: after clearing the selection the orange outline stayed visible. The panel's
+  preview world and the level are two different worlds, while `GEditor->NoteSelectionChange()` only
+  repaints the level viewport and the panel is an independent viewport client that is not realtime by
+  default. Xingyi repaints the panel inside the clear function, so every path is covered.
+- **Black preview for levels without lights**: such a level renders completely black. Xingyi lights the
+  fallback light.
+
+**Additions**
+
+- **Multi-select mode**: click unselected actors to add them to the selection, then click a selected actor
+  to drag the whole group out with its relative positions and rotations preserved; each actor's instance
+  scale is carried over as well.
+- **Clear Selection button**: levels are full of sky spheres, atmosphere and volume boxes, so clicking
+  empty space to clear the selection rarely works.
+- A status bar showing the current level, the lighting source and the number of selected actors.
+- **Drag a level asset straight onto the panel** to open it.
+- Empty-state guidance; up to 4 independent panels can be open at the same time.
+- Settings: fallback light mode / intensity / rotation, ground grid, billboard sprites, performance mode,
+  and whether to frame the content after loading a level.
+- 4 automation tests (lighting decision, recent and favorites lists, viewport construction smoke test,
+  World Partition diagnostic).
 
 ---
 
-## 4. 免责声明
+## 3. Known limitations
 
-本插件按「原样」提供，不附带任何明示或暗示的担保。
+- **World Partition levels only show the "always loaded" part.** The bulk of the content lives in external
+  actor files loaded by region by the streaming system, and the preview world does not run that streaming -
+  an engine-level limitation shared with the Actor Palette plugin. To use content from such a level, copy
+  the actors you need into a regular level first, then open that level.
 
 ---
 
-## 4.1 MIT 许可全文
+## 4. Disclaimer
 
-Fab 打包规则要求安装包内不携带 `LICENSE` 等仓库元数据文件，因此许可全文在此复述
-（仓库里也有独立的一份：[LICENSE](LICENSE)）：
+This plugin is provided "as is", without any express or implied warranty.
+
+---
+
+## 4.1 MIT license full text
+
+Fab packaging rules require that repository metadata files such as `LICENSE` are not shipped inside the
+package, so the full license text is reproduced here (a standalone copy also exists in the repository:
+[LICENSE](LICENSE)):
 
 ```
 MIT License
 
-Copyright (c) 2026 StarGame (星空 / Ker0el) <https://space.bilibili.com/177308205>
+Copyright (c) 2026 StarGame <https://space.bilibili.com/177308205>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -97,16 +106,16 @@ SOFTWARE.
 
 ---
 
-## 5. 不在本声明范围内的内容
+## 5. Not covered by this notice
 
-- Unreal Engine 本体及其任何资源、商标。
-- **用本插件配合 Unreal Engine 制作出来的作品** —— 那些作品的授权取决于你与
-  Epic Games 之间的协议，与本插件无关。
+- Unreal Engine itself, along with any of its assets or trademarks.
+- **Works created with this plugin and Unreal Engine** - licensing of those works is governed by your
+  agreement with Epic Games and is unrelated to this plugin.
 
 ---
 
 <div align="center">
 
-**星移 Xingyi** · 作者 [星空](https://space.bilibili.com/177308205)
+**Xingyi** · by [StarGame](https://space.bilibili.com/177308205)
 
 </div>

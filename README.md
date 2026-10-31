@@ -1,65 +1,64 @@
 <div align="center">
 
-<img src="Resources/Icon128.png" width="140" alt="星移"/>
+<img src="Resources/Icon128.png" width="140" alt="Xingyi"/>
 
-# 星移 · Xingyi
+# Xingyi - Level as Asset Palette
 
-**斗转星移 —— 把任意关卡当作素材板，在面板里浏览关卡中的 Actor，点选拖拽即可移入当前关卡，也能一次搬一整组**
+**Use any saved level as an asset board: browse its actors in a panel, click one and drag it straight into the level you are editing - or move a whole group at once**
 
 [![UE](https://img.shields.io/badge/Unreal%20Engine-5.4%20%7C%205.5%20%7C%205.6%20%7C%205.7%20%7C%205.8-0E1128?logo=unrealengine&logoColor=white)](https://www.unrealengine.com/)
 [![License](https://img.shields.io/badge/License-MIT-3DA639)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Win64-0078D4?logo=windows&logoColor=white)](../../releases/latest)
-[![Language](https://img.shields.io/badge/%E7%95%8C%E9%9D%A2-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-red)](../../releases/latest)
-[![Release](https://img.shields.io/github/v/release/Ker0el/Xingyi-UE-Plugin?color=blue&label=%E4%B8%8B%E8%BD%BD)](../../releases/latest)
+[![Release](https://img.shields.io/github/v/release/Ker0el/Xingyi-UE-Plugin?color=blue&label=Download)](../../releases/latest)
 
-[下载](#安装) · [快速上手](#快速上手) · [多选](#多选一次搬一组东西) · [预览光照](#预览光照) · [常见问题](#常见问题) · [English](Docs/README_EN.md)
+[Install](#installation) · [Quick start](#quick-start) · [Multi-select](#multi-select-moving-a-whole-group) · [Preview lighting](#preview-lighting) · [FAQ](#faq)
 
 </div>
 
 ---
 
-## 这是什么
+## What it does
 
-**星移（Xingyi）** 是一个 UE5 编辑器插件：**把任意关卡当成"素材板"**。
+**Xingyi** is an Unreal Engine 5 editor plugin that turns **any saved level into an asset board**.
 
-打开一个已有关卡（比如你那个堆满了道具的布景关、买来的场景资产、以前做过的旧场景），
-它的 Actor 会全部呈现在面板里 —— 你想用哪个，**左键点一下、直接拖进当前关卡**，
-不用在内容浏览器里翻半天、也不用先打开那个关卡去复制粘贴。
+Open an existing level - a set-dressing scene full of props, a bought environment, an old scene you made
+years ago - and its actors appear in the panel. To use one, **click it and drag it straight into the level
+you are editing**: no digging through the Content Browser, no opening that level just to copy and paste.
 
-一个 Actor 一个 Actor 地搬太慢？打开工具栏的 **「多选模式」**，把要的东西一个个点进来，
-再拖其中任意一个 —— **整组按原来的相对位置和朝向一起落进你的关卡**，
-桌子归桌子、椅子归椅子，摆法一点不走样。
+Moving actors one by one is slow. Turn on **Multi-Select** in the toolbar, click the props you want,
+then drag any one of them - **the whole group lands in your level keeping its relative positions and
+rotations**. Tables stay next to tables; nothing shifts.
 
-> 功能定位对标 Unreal Engine 自带的实验性插件 **Actor Palette**（引擎里就能搜到）——
-> 星移修掉了它几个比较要命的问题，还加了多选和成组拖入。
+> The plugin addresses the same use case as the engine's experimental **Actor Palette** plugin.
+> It is an independent implementation and contains no Actor Palette source code.
 
 ---
 
-## 相对官方 Actor Palette 的改进
+## What Xingyi adds
 
-| | 官方 Actor Palette | **星移** |
+| | Engine's experimental Actor Palette | **Xingyi** |
 |:---|:---|:---|
-| **预览光照** | 预览场景自带一盏太阳，和你关卡里的太阳优先级相同 → 渲染器报「**多个定向光源正在竞争**」，而且提示会一直挂在视口上 | 自带那盏灯**永远排最低优先级**，从根上不会和关卡的太阳打架；默认「**始终点亮**」，预览亮度和官方版一致，并在底部写明当前用的是谁的光照 |
-| **空关卡** | 一个光源都没有的关卡打开是**全黑**的 | 自动点亮兜底光，看得见东西 |
-| **崩溃点** | 点击面板时若控件不在窗口里 → `ToSharedRef()` 空指针崩溃；重复打开同一个面板 → `check()` 断言崩溃 | 全部判空；断言改成提示 |
-| **跨世界选中** | 点选面板里的 Actor 会把它塞进编辑器选中集**且从不清理**（按 Delete 删掉的是面板里那份，关卡里那份还在） | 拖拽结束、换关卡、关面板、清空选中、切模式时都会**自动摘干净**，并主动重画面板 —— 不会留下橙色描边 |
-| **多选 / 成组拖入** | 没有，只能一个一个拖 | 工具栏一个「**多选模式**」开关；选好之后点其中任意一个，**整组一起拖出去，保持原来的相对位置和朝向** |
-| **实例缩放** | 拖出去的是资产本身，**实例上改过的缩放会丢** | 缩放照搬源 Actor |
-| **「实时」开关** | 勾了不生效 | 真的会 tick 预览世界（粒子、动画、贴图流送都会动） |
-| **公告板精灵** | 默认关着 → 粒子、材质球看不到 | 默认显示；地面网格也默认显示 |
-| **打开关卡** | 只能从菜单里翻列表 | 菜单 + **把关卡资产直接拖到面板上** |
-| **清空选中** | 只能点空处碰运气 | 工具栏一个「**清空选中**」按钮 —— 关卡里满天都是天空球、大气和体积框，想靠点空处清空基本点不到 |
-| **自动化测试** | 无 | 4 个（光照判定 / 最近收藏列表 / 视口构造冒烟 / WP 诊断） |
+| **Preview lighting** | The preview scene brings its own sun at the same priority as the sun in your level, so the renderer reports "multiple directional lights competing" and the message stays pinned to the viewport | The built-in sun is pinned to the **lowest priority**, so it can never tie with the level's sun; the status bar always states which lighting the preview uses |
+| **Levels without lights** | A level with no lights renders **completely black** | The fallback light is lit automatically so you can see the content |
+| **Crash points** | Clicking the panel while its widget is not in a window crashes in `ToSharedRef()`; reopening the same panel trips a `check()` assertion | All paths are null-checked; assertions were downgraded to notices |
+| **Cross-world selection** | Selecting an actor in the panel adds it to the editor selection **and never clears it** (Delete removes the panel copy, not the level one) | Cleared automatically when a drag ends, the level changes, the panel closes, the selection is cleared or the mode changes - and the panel is repainted, so no orange outline is left behind |
+| **Multi-select / group drag** | Not available; actors can only be dragged one at a time | A **Multi-Select** toggle in the toolbar; drag any selected actor and **the whole group moves with its relative positions and rotations preserved** |
+| **Instance scale** | Only the asset is passed, so **scale changed on the instance is lost** | The source actor's scale is carried over |
+| **Realtime toggle** | Has no effect | Actually ticks the preview world (particles, animation, texture streaming) |
+| **Billboard sprites** | Off by default, so particles and material spheres are invisible | Shown by default; the ground grid is shown by default too |
+| **Opening a level** | Only through a list in the menu | Menu **and** dragging a level asset straight onto the panel |
+| **Clear selection** | Click empty space and hope | A dedicated **Clear Selection** button - levels are full of sky spheres, atmosphere and volume boxes, so clicking empty space rarely works |
+| **Automation tests** | None | 4 (lighting decision, recent/favorites list, viewport construction smoke test, World Partition diagnostic) |
 
 ---
 
-## 安装
+## Installation
 
-### 方式一：下载预编译包（推荐，不用装 Visual Studio）
+### Option 1: precompiled package (recommended - no Visual Studio required)
 
-到 [**Releases**](../../releases/latest) 页下载对应你引擎版本的 zip：
+Download the zip for your engine version from the [**Releases**](../../releases/latest) page:
 
-| 引擎版本 | 安装包 |
+| Engine version | Package |
 |:---|:---|
 | UE 5.4 | `Xingyi_UE5.4.zip` |
 | UE 5.5 | `Xingyi_UE5.5.zip` |
@@ -67,221 +66,222 @@
 | UE 5.7 | `Xingyi_UE5.7.zip` |
 | UE 5.8 | `Xingyi_UE5.8.zip` |
 
-解压后放进你项目的 `Plugins` 目录，最终结构应该是：
+Unzip it into your project's `Plugins` folder. The result should look like this:
 
 ```
-你的项目/
+YourProject/
 ├── Content/
 ├── Plugins/
-│   └── Xingyi/              ← 解压出来就是这个文件夹
+│   └── Xingyi/              <- the folder you unzipped
 │       ├── Xingyi.uplugin
 │       ├── Binaries/Win64/UnrealEditor-Xingyi.dll
 │       ├── Resources/
 │       └── Source/
-└── 你的项目.uproject
+└── YourProject.uproject
 ```
 
-> 没有 `Plugins` 文件夹就自己建一个。**纯蓝图项目也能用** —— 预编译的二进制不需要你编译任何 C++。
+> Create the `Plugins` folder if it does not exist. **Blueprint-only projects work too** - the precompiled
+> binary needs no C++ compilation.
 
-启动编辑器，如果弹出"是否重新编译"的提示，点**否**（包里的二进制就是给这个版本编译的）。
+When the editor asks whether to rebuild the module, answer **No** - the binary in the package is built
+for that engine version.
 
-### 方式二：从源码编译
+### Option 2: build from source
 
 ```bash
-cd 你的项目/Plugins
+cd YourProject/Plugins
 git clone https://github.com/Ker0el/Xingyi-UE-Plugin.git Xingyi
 ```
 
-然后**右键 `.uproject` → Generate Visual Studio project files**，用 VS 打开编译 `Development Editor` 配置，
-或者用命令行：
+Then **right-click the `.uproject` → Generate Visual Studio project files**, open the solution and build
+the `Development Editor` configuration, or use the command line:
 
 ```bat
-"C:\Program Files\Epic Games\UE_5.8\Engine\Build\BatchFiles\Build.bat" 你的项目Editor Win64 Development -Project="你的项目.uproject" -WaitMutex
+"C:\Program Files\Epic Games\UE_5.8\Engine\Build\BatchFiles\Build.bat" YourProjectEditor Win64 Development -Project="YourProject.uproject" -WaitMutex
 ```
 
 ---
 
-## 快速上手
+## Quick start
 
-1. 打开编辑器，主菜单 **工具(Tools) → 星移 → 星移面板1**（最多可以同时开 4 个面板，每个看一个关卡）
-2. 面板左上点 **「选择关卡」** 挑一个关卡当素材板 —— 也可以**直接把关卡资产从内容浏览器拖到面板上**
-3. 关卡内容会显示在面板里，**左键点选任意 Actor**，它就跟着鼠标走，**松手放进你的关卡**
-4. 想换个视角：面板里可以自由飞行（和视口操作一样）；点 **「重置相机」** 回到关卡自己存的视角
+1. Open the editor and choose **Tools → Xingyi → Xingyi Panel 1** (up to 4 panels can be open at once,
+   each showing its own level)
+2. Click **Select Level** at the top-left of the panel and pick a level to use as an asset board - or
+   **drag a level asset from the Content Browser onto the panel**
+3. The level content appears in the panel. **Click any actor** and it follows the mouse; **release to place
+   it in your level**
+4. To change the view, fly around as in any viewport; **Reset Camera** returns to the view stored in the level
 
-面板底部会写明：**当前是哪个关卡** · **预览用的是谁的光照** · **选了几个**。
+The status bar at the bottom shows **which level is open**, **which lighting the preview uses** and
+**how many actors are selected**.
 
-工具栏从左到右：**选择关卡 · 重载 · 收藏 · 光照 · 实时 · 游戏视图 · 重置相机 · 多选模式 · 清空选中**。
+Toolbar, left to right: **Select Level · Reload · Favorite · Lighting · Realtime · Game View · Reset Camera ·
+Multi-Select · Clear Selection**.
 
 ---
 
-## 多选：一次搬一组东西
+## Multi-select: moving a whole group
 
-工具栏最右边有个 **「多选模式」** 开关，默认**关着** —— 关着的时候行为和以前一模一样，点一下就拖这一个。
+The **Multi-Select** toggle sits at the right end of the toolbar and is **off** by default - with it off,
+behaviour is exactly as before: click once and drag that one actor.
 
-打开之后：
+Turn it on:
 
-| 操作 | 结果 |
+| Action | Result |
 |:---|:---|
-| 左键点**没选中**的 Actor | 加进选中（预览里会给它描橙色边） |
-| 左键点**已选中**的 Actor | **把这一组一起拖出去**，以它为准落点 |
-| `Ctrl` + 左键点已选中的 | 移出选中 |
-| 点 **「清空选中」** | 一次全清 |
-| 点面板空白处 | 也能清空（但关卡里通常到处都是天空球和体积框，所以还是按按钮稳） |
+| Left-click an **unselected** actor | Adds it to the selection (drawn with an orange outline) |
+| Left-click an **already selected** actor | **Drags the whole group**, anchored on that actor |
+| `Ctrl` + left-click a selected actor | Removes it from the selection |
+| **Clear Selection** | Clears everything at once |
+| Click empty space | Also clears the selection (but levels are usually full of sky spheres and volumes, so the button is more reliable) |
 
-**成组拖入时，它们之间的相对位置和朝向会原样保留。** 位置是相对「你拖的那一个」算的：
-它落在鼠标那儿，其余的绕着它摆回原位。每个 Actor 的**缩放也是照搬源的** ——
-拖拽本身只传资产，资产里存的是默认缩放，实例上手动改过的尺寸以前是会丢的。
+**When a group is dropped, the relative positions and rotations are preserved.** Positions are computed
+relative to the actor you dragged: that actor lands under the mouse and the others return to their
+original places around it. **Each actor's scale is also carried over** - a drag passes assets only, and
+assets store the default scale, so manual instance scaling used to be lost.
 
-没选中任何 Actor 的时候，点哪个都是加进选中；选好之后**再点其中一个才开始拖**。
+With nothing selected, clicking any actor adds it to the selection; once you have a selection, clicking
+one of the selected actors starts the drag.
 
-> ⚠️ **拖动过程中，光标那里的预览是叠在一起的一团**，松手放下才会散开成原来的摆法。
-> 这是引擎写死的，见下面「已知限制」。拖动时光标旁边会写一行字告诉你拖了几个。
-
----
-
-## 预览光照
-
-官方版最容易踩的坑就在这：预览场景自带一盏平行光，你打开的关卡通常也有一盏太阳，
-两盏优先级相同 → 渲染器就会报：
-
-> 多个定向光源正在竞争成为唯一一个用于前向着色、半透明、水或体积雾的光源……
-
-星移的做法：
-
-- 自带那盏灯被设成**最低优先级**（`ForwardShadingPriority = -1`），**永远不会和关卡的太阳打平**，
-  所以那条提示**从根上不会再出现**；
-- 默认「**始终点亮**」：兜底灯一直亮着，预览亮度和官方版一致（和你关卡的太阳一起照）；
-  它优先级最低，所以那条提示依然不会出现；
-- 想换成别的：面板 **「光照 ▾」** 菜单里可以切「**自动**」（关卡自带光源时只用关卡自己的光照，观感和关卡一致）或「始终关闭」；
-- 底部状态条始终写明当前用的是「兜底光源 + 关卡光照（N 盏灯）」还是「使用关卡自身光照（N 盏灯）」。
-
-阳光的强度和角度在 **项目设置 → 插件 → 星移** 里调。
+> **While dragging, the preview under the cursor is a stack of overlapping actors**; the group spreads
+> into its original layout when you release. This is how the engine's drag preview works - see
+> "Known limitations" below. A line next to the cursor tells you how many objects are being dragged.
 
 ---
 
-## 设置项
+## Preview lighting
 
-**项目设置 → 插件 → 星移**：
+The preview scene comes with its own directional light, and the level you open usually has a sun as well.
+When two lights share the same priority, the renderer reports:
 
-| 设置 | 说明 |
+> Multiple directional lights are competing to be the single one used for forward shading, translucency,
+> water or volumetric fog...
+
+Xingyi's approach:
+
+- The built-in light is set to the **lowest priority** (`ForwardShadingPriority = -1`), so it can never tie
+  with the level's sun and that message cannot be triggered by the plugin;
+- The default mode is **Always On**: the fallback light stays lit, so the preview brightness matches the
+  engine's own palette; because it has the lowest priority the message still does not appear;
+- Other modes are available from the **Lighting** menu: **Auto** (use the level's own lighting whenever it
+  has lights, so the preview matches the level) and **Always Off**;
+- The status bar always states whether the preview uses "Fallback light + level lighting (N lights)" or
+  "Using the level's own lighting (N lights)".
+
+Sun intensity and angle are configured in **Project Settings → Plugins → Xingyi**.
+
+---
+
+## Settings
+
+**Project Settings → Plugins → Xingyi**:
+
+| Setting | Description |
 |:---|:---|
-| **兜底光源模式** | 始终点亮（默认）/ 自动 / 始终关闭 |
-| **兜底光强度 / 角度** | 只有点亮时才有效 |
-| **显示地面网格** | 默认开 |
-| **显示公告板精灵** | 粒子、材质球这类图标，默认开 |
-| **性能模式** | 关掉 Lumen 等高级特性换帧率，会改变预览观感 |
-| **打开关卡后自动框住内容** | 默认**关**。关掉时用关卡自己存的视角（和官方版一致） |
+| **Fallback Light Mode** | Always On (default) / Auto / Always Off |
+| **Fallback Light Intensity / Rotation** | Only used when the fallback light is on |
+| **Show Ground Grid** | On by default |
+| **Show Billboard Sprites** | Icons for particles and material spheres, on by default |
+| **Performance Mode** | Disables advanced features such as Lumen for a higher frame rate; changes how the preview looks |
+| **Frame Content On Level Load** | Off by default. When off, the level's stored view is used |
 
 ---
 
-## 兼容性
+## Compatibility
 
-| 引擎版本 | 状态 | 二进制兼容 |
+| Engine version | Status | Binary compatibility |
 |:---|:---:|:---|
-| UE 5.4 | ✅ | 5.4.x 全系列 |
-| UE 5.5 | ✅ | 5.5.x 全系列 |
-| UE 5.6 | ✅ | 5.6.x 全系列 |
-| UE 5.7 | ✅ | 5.7.x 全系列 |
-| UE 5.8 | ✅ | 5.8.x 全系列 |
+| UE 5.4 | ✅ | All 5.4.x |
+| UE 5.5 | ✅ | All 5.5.x |
+| UE 5.6 | ✅ | All 5.6.x |
+| UE 5.7 | ✅ | All 5.7.x |
+| UE 5.8 | ✅ | All 5.8.x |
 
-> **本次发布（v1.2.3）先只提供 UE 5.8 的包**，5.4–5.7 的预编译包会在后续版本补上。
+> **This release (v1.2.4) ships the UE 5.8 package only.** Precompiled packages for 5.4-5.7 follow in
+> later releases.
 
-- **平台**：Win64（Windows 10 / 11）
-- **模块类型**：Editor 模块（仅编辑器内使用，不会打进打包后的游戏）
-- 每个包都按该引擎的 `CompatibleChangelist` 编译，所以**同一大版本内的小版本升级不用重新编译**
-
----
-
-## 已知限制
-
-- **World Partition（开放世界）关卡只能看到「始终加载」的那一部分**（天空、大气、雾、光照、地形壳等）。
-  关卡主体内容在**空间加载单元**里，是通过 WP 的流送系统按区域加载的，而预览世界跑不到那套流送 ——
-  这是引擎层面的限制，**官方 Actor Palette 同样如此**（而且它连那部分都看不到，因为相机没对）。
-  想拿开放世界关卡里的东西，建议**把要用的 Actor 先复制到一个普通关卡里**，再用星移打开那个关卡。
-- **多选拖拽时，拖动过程中的预览是叠在一起的**，松手放下才按原布局散开。
-  引擎把落点预览的位置写死在光标那一点上 —— `FActorPositioning::GetSurfaceAlignedTransform`
-  里返回的位置永远是 `SurfaceLocation + 自身碰撞体偏移`，起始变换只参与旋转和缩放；
-  而且拖拽那个小缩略图只画 `AssetData[0]`。两个加起来就是「看着像只拖了一个」。
-  作为补偿：拖动时光标旁边会显示「N 个对象 · 放下后按原布局摆放」。
+- **Platform**: Win64 (Windows 10 / 11)
+- **Module type**: Editor module (editor only; it is never compiled into a packaged game)
+- Each package is built against that engine's `CompatibleChangelist`, so minor upgrades within the same
+  major version do not require a rebuild
 
 ---
 
-## 常见问题
+## Known limitations
+
+- **World Partition levels only show the "always loaded" part** (sky, atmosphere, fog, lighting, terrain
+  shell and so on). The bulk of such a level lives in spatial loading cells that the streaming system
+  loads by region, and the preview world does not run that streaming - an engine-level limitation that
+  applies to the engine's own Actor Palette as well.
+  To use content from a World Partition level, **copy the actors you need into a regular level** and open
+  that level in Xingyi.
+- **While dragging a group, the preview under the cursor overlaps**; the group spreads out when dropped.
+  The engine pins the drag preview to the cursor position (`FActorPositioning::GetSurfaceAlignedTransform`
+  returns `SurfaceLocation + collision offset`; the starting transform only affects rotation and scale),
+  and the drag thumbnail draws `AssetData[0]` only. As a compensation, a line next to the cursor reads
+  "N object(s) - placed in their original layout when dropped".
+
+---
+
+## FAQ
 
 <details>
-<summary><b>拖了一个关卡进去，面板里只有天空 / 什么都没有</b></summary>
+<summary><b>A level I dragged in shows only sky / nothing at all</b></summary>
 
-那个关卡多半是 **World Partition（开放世界）关卡** —— 它的内容存放在外部 Actor 文件里，
-靠流送系统按区域加载，面板拿不到。见上面「已知限制」。
+It is most likely a **World Partition level** - its content lives in external actor files loaded by region
+by the streaming system, which the panel cannot reach. See "Known limitations" above.
 
-换个**普通关卡**当素材板，或者把要用的 Actor 先复制到普通关卡里。
+Use a **regular level** as the asset board, or copy the actors you need into a regular level first.
 
 </details>
 
 <details>
-<summary><b>打开面板时提示「多个定向光源正在竞争…」</b></summary>
+<summary><b>The panel reports "multiple directional lights competing..."</b></summary>
 
-这是引擎渲染器对**场景里存在两盏优先级相同的平行光**的提示。
+That is the renderer's message about **two directional lights with the same priority in the scene**.
 
-星移已经把自己那盏设成最低优先级，正常情况下不会再触发。如果你还是看到了，
-多半是**你的关卡里本来就有两盏太阳** —— 在关卡里选中它们，给其中一盏设一个
-`Forward Shading Priority` 把优先级分开就好了。
-
-</details>
-
-<details>
-<summary><b>面板里点选 Actor 之后，按 Delete 删掉的是哪个？</b></summary>
-
-面板里的 Actor 属于**预览世界**，是关卡里那份的副本。星移会在拖拽结束、换关卡、关面板、
-清空选中、切模式时自动把它从编辑器的选中集里摘掉并重画面板，所以正常操作不会误删，
-也不会留下橙色描边。
+Xingyi already pins its own light to the lowest priority, so the plugin cannot trigger it. If you still
+see it, **your level probably contains two suns** - select them and give one of them a different
+`Forward Shading Priority`.
 
 </details>
 
 <details>
-<summary><b>拖多个的时候，光标那儿是一团叠在一起的东西</b></summary>
+<summary><b>After clicking an actor in the panel, what does Delete remove?</b></summary>
 
-正常的，见上面「已知限制」—— 位置是引擎写死的。**松手之后会按原来的相对位置散开。**
-
-拖动时光标旁边会写一行「N 个对象 · 放下后按原布局摆放」，用它确认到底拖了几个。
-
-</details>
-
-<details>
-<summary><b>点过的 Actor 橙色描边不消 —— v1.2.0 修复了描边逻辑</b></summary>
-
-**v1.2.0 起，描边逻辑重做了。**
-
-原来是这样：面板里的预览世界和你的关卡是**两个世界**，而 `GEditor->NoteSelectionChange()`
-**只会通知关卡视口重画**。面板自己是个独立的 `FEditorViewportClient`，默认还不实时
-（`SetRealtime(false)`，为了省性能），所以选中状态是清掉了、画面却还是上一帧的 ——
-描边就挂在那儿，看着像还在选中。
-
-现在：
-
-- 清空选中的**所有路径**（拖拽结束、换关卡、关面板、点「清空选中」、关掉多选模式）
-  都会**主动重画面板**；
-- 这个 `Invalidate()` 写在清空函数**里面**，不是靠每个调用点自己记得加 ——
-  以前就是漏了一处才出的问题；
-- 顺带，拖拽那条路径现在也会把 Actor 记进插件自己的选中表，不会再出现
-  「编辑器里挂着描边、插件却以为没选中」的脱节。
+Actors in the panel belong to the **preview world**; they are copies of the level's actors. Xingyi removes
+them from the editor selection and repaints the panel when a drag ends, the level changes, the panel
+closes, the selection is cleared or the mode changes, so normal use will not delete the wrong actor and
+will not leave an orange outline behind.
 
 </details>
 
 <details>
-<summary><b>纯蓝图项目能用吗？</b></summary>
+<summary><b>When dragging several actors, the cursor shows a stack of overlapping objects</b></summary>
 
-能。预编译包就是给纯蓝图项目准备的 —— 不需要 Visual Studio，不需要编译 C++。
+That is expected - see "Known limitations": the drag preview position is fixed by the engine. **The group
+spreads into its original relative layout when you release.**
+
+A line next to the cursor reads "N object(s) - placed in their original layout when dropped" so you can
+confirm how many objects are being dragged.
 
 </details>
 
 <details>
-<summary><b>启动时提示「模块缺失或不兼容，需要重新编译」</b></summary>
+<summary><b>Can I use it in a Blueprint-only project?</b></summary>
 
-预编译的 DLL 是按**特定引擎版本**编译的，装错版本就会这样。
+Yes. The precompiled package is made for Blueprint-only projects - no Visual Studio and no C++ build
+required.
 
-确认 `Xingyi/Binaries/Win64/UnrealEditor.modules` 里的 `BuildId` 和你引擎
-`Engine/Build/Build.version` 里的 `CompatibleChangelist` 对得上：
+</details>
+
+<details>
+<summary><b>On startup the editor says the module is missing or incompatible</b></summary>
+
+Precompiled binaries are built for a **specific engine version**; installing the wrong one causes this.
+
+Check that `Xingyi/Binaries/Win64/UnrealEditor.modules` matches your engine's
+`Engine/Build/Build.version`:
 
 ```json
 {
@@ -290,39 +290,40 @@ git clone https://github.com/Ker0el/Xingyi-UE-Plugin.git Xingyi
 }
 ```
 
-装错版本就换对应版本的 zip。
+Install the zip that matches your engine version.
 
 </details>
 
 <details>
-<summary><b>小面板上工具条按钮被挤掉了</b></summary>
+<summary><b>Toolbar buttons are cut off in a narrow panel</b></summary>
 
-工具条不换行，面板拖窄时右边几个按钮会被裁掉。把面板拉宽一点就行。
+The toolbar does not wrap, so the rightmost buttons are clipped when the panel is narrow. Widen the panel.
 
 </details>
 
 ---
 
-## 署名与许可
+## Credits and license
 
-本插件采用 **[MIT](LICENSE)** 许可 —— 商业使用、修改、再分发都不受限制。
+This plugin is released under the **[MIT](LICENSE)** license - commercial use, modification and
+redistribution are unrestricted.
 
 | | |
 |:---|:---|
-| **作者** | **星空**（[B 站](https://space.bilibili.com/177308205)） |
-| **许可** | MIT，全文见 [LICENSE](LICENSE) |
+| **Author** | **StarGame** ([Bilibili](https://space.bilibili.com/177308205)) |
+| **License** | MIT, full text in [LICENSE](LICENSE) |
 
-功能定位对标 Unreal Engine 自带的实验性插件 **Actor Palette**，代码是另行实现的。
-完整的说明见 **[NOTICE.md](NOTICE.md)**。
+It addresses the same use case as the engine's experimental **Actor Palette** plugin; the code is an
+independent implementation. See **[NOTICE.md](NOTICE.md)** for details.
 
-> 本插件按「原样」提供，不附带任何明示或暗示的担保。
+> This plugin is provided "as is", without any express or implied warranty.
 
 ---
 
 <div align="center">
 
-**如果这个插件帮到了你，给个 ⭐ 吧**
+**If this plugin helps you, please give it a ⭐**
 
-作者：[星空](https://space.bilibili.com/177308205) · 把任意关卡当作素材板的 UE 编辑器插件
+By [StarGame](https://space.bilibili.com/177308205) · a UE editor plugin that turns any level into an asset board
 
 </div>

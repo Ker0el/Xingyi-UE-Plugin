@@ -22,6 +22,7 @@
 #include "DragAndDrop/AssetDragDropOp.h"
 #include "InputKeyEventArgs.h"
 #include "Input/Events.h"
+#include "XingyiText.h"
 
 #define LOCTEXT_NAMESPACE "Xingyi"
 
@@ -69,7 +70,7 @@ FText FXingyiViewportClient::GetSourceLevelName() const
 
 void FXingyiViewportClient::ReportFailure(const FText& Message) const
 {
-	UE_LOG(LogXingyi, Warning, TEXT("星移：%s"), *Message.ToString());
+	UE_LOG(LogXingyi, Warning, TEXT("Xingyi: %s"), *Message.ToString());
 
 	FNotificationInfo Info(Message);
 	Info.ExpireDuration = 6.0f;
@@ -141,17 +142,17 @@ void FXingyiViewportClient::RefreshPreviewLighting()
 	if (bLightTheFallback && LevelLightCount > 0)
 	{
 		LightingStatusText = FText::Format(
-			LOCTEXT("LightingFallbackWithLevel", "兜底光源 + 关卡光照（{0} 盏灯）"),
+			XY_TEXT("Fallback light + level lighting ({0} lights)", "兜底光源 + 关卡光照（{0} 盏灯）"),
 			FText::AsNumber(LevelLightCount));
 	}
 	else if (bLightTheFallback)
 	{
-		LightingStatusText = LOCTEXT("LightingFallbackOnly", "兜底光源已点亮（关卡里没有光源）");
+		LightingStatusText = XY_TEXT("Fallback light on (the level has no lights)", "兜底光源已点亮（关卡里没有光源）");
 	}
 	else
 	{
 		LightingStatusText = FText::Format(
-			LOCTEXT("LightingFromLevelOnly", "使用关卡自身光照（{0} 盏灯）"),
+			XY_TEXT("Using the level's own lighting ({0} lights)", "使用关卡自身光照（{0} 盏灯）"),
 			FText::AsNumber(LevelLightCount));
 	}
 
@@ -178,13 +179,13 @@ void FXingyiViewportClient::FrameContentIfRequested()
 	int32 ConsideredActors = 0;
 	if (!SourceLevel.ComputeContentBounds(ContentBounds, ConsideredActors))
 	{
-		UE_LOG(LogXingyi, Display, TEXT("星移：没能算出关卡内容的包围盒，保持关卡自己保存的视角。"));
+		UE_LOG(LogXingyi, Display, TEXT("Xingyi: could not compute the level content bounds; keeping the view saved in the level."));
 		return;
 	}
 
 	FocusViewportOnBox(ContentBounds, /*bInstant=*/true);
 
-	UE_LOG(LogXingyi, Display, TEXT("星移：相机已框到 %d 个 Actor 上，包围盒 %s ~ %s，框后相机位置 %s。"),
+	UE_LOG(LogXingyi, Display, TEXT("Xingyi: camera framed %d actors, bounds %s .. %s, camera position after framing %s."),
 		ConsideredActors,
 		*ContentBounds.Min.ToCompactString(),
 		*ContentBounds.Max.ToCompactString(),
@@ -193,7 +194,7 @@ void FXingyiViewportClient::FrameContentIfRequested()
 
 EXingyiLevelLoadResult FXingyiViewportClient::OpenSourceLevel(const FAssetData& LevelAsset)
 {
-	UE_LOG(LogXingyi, Display, TEXT("星移：请求打开关卡 %s"), *LevelAsset.GetObjectPathString());
+	UE_LOG(LogXingyi, Display, TEXT("Xingyi: opening level %s"), *LevelAsset.GetObjectPathString());
 
 	// 换关卡之前，先把上一个关卡留下的选中状态清干净
 	DropPaletteSelection();
@@ -203,13 +204,13 @@ EXingyiLevelLoadResult FXingyiViewportClient::OpenSourceLevel(const FAssetData& 
 	if (Result == EXingyiLevelLoadResult::NotALevelAsset)
 	{
 		ReportFailure(FText::Format(
-			LOCTEXT("NotALevelAsset", "「{0}」不是一个可用的关卡资产。"),
+			XY_TEXT("\"{0}\" is not a usable level asset.", "「{0}」不是一个可用的关卡资产。"),
 			FText::FromString(LevelAsset.GetObjectPathString())));
 	}
 	else if (Result == EXingyiLevelLoadResult::LoadFailed)
 	{
 		ReportFailure(FText::Format(
-			LOCTEXT("LevelLoadFailed", "关卡「{0}」载入失败，面板保持原样。"),
+			XY_TEXT("Failed to load level \"{0}\"; the panel is unchanged.", "关卡「{0}」载入失败，面板保持原样。"),
 			FText::FromString(LevelAsset.AssetName.ToString())));
 	}
 
@@ -234,11 +235,11 @@ EXingyiLevelLoadResult FXingyiViewportClient::OpenSourceLevel(const FAssetData& 
 	// 全量加载，不能碰），所以这里只记一行日志，界面上的说明交给状态条和空状态卡片。
 	if (SourceLevel.IsPartitioned())
 	{
-		UE_LOG(LogXingyi, Display, TEXT("星移：%s 是 World Partition 关卡，只能显示「始终加载」的部分。"),
+		UE_LOG(LogXingyi, Display, TEXT("Xingyi: %s is a World Partition level; only the always-loaded part can be shown."),
 			*SourceLevel.GetAsset().AssetName.ToString());
 	}
 
-	UE_LOG(LogXingyi, Display, TEXT("星移：关卡 %s 载入完成，可显示 Actor %d 个。"),
+	UE_LOG(LogXingyi, Display, TEXT("Xingyi: level %s loaded, %d displayable actors."),
 		*SourceLevel.GetAsset().AssetName.ToString(), SourceLevel.CountVisibleActors());
 
 	FrameContentIfRequested();
@@ -448,7 +449,7 @@ void FXingyiViewportClient::BeginDragOutOfPalette(const TArray<AActor*>& Palette
 		Actor->GetReferencedContentObjects(ReferencedAssets);
 		if (ReferencedAssets.Num() == 0 || !ReferencedAssets[0])
 		{
-			UE_LOG(LogXingyi, Display, TEXT("星移：%s 没有可拖拽的资产，跳过。"), *Actor->GetName());
+			UE_LOG(LogXingyi, Display, TEXT("Xingyi: %s has no draggable asset; skipped."), *Actor->GetName());
 			continue;
 		}
 
@@ -479,7 +480,7 @@ void FXingyiViewportClient::BeginDragOutOfPalette(const TArray<AActor*>& Palette
 		}
 	}
 
-	UE_LOG(LogXingyi, Display, TEXT("星移：成组拖拽 —— 选中 %d 个，有资产的 %d 个，送进拖拽 %d 个资产，起点=%s。"),
+	UE_LOG(LogXingyi, Display, TEXT("Xingyi: group drag - %d selected, %d with assets, %d assets passed to the drag, origin=%s."),
 		PaletteActors.Num(), ActorsWithAsset, Assets.Num(), *AnchorActor->GetName());
 
 	if (Assets.Num() == 0)
@@ -503,7 +504,7 @@ void FXingyiViewportClient::BeginDragOutOfPalette(const TArray<AActor*>& Palette
 		// 图标沿用拖拽操作自己的（一般是空的，那也没关系，提示文字本来就不需要图标）
 		DragOperation->SetToolTip(
 			FText::Format(
-				LOCTEXT("DragGroupHint", "{0} 个对象 · 放下后按原布局摆放"),
+				XY_TEXT("{0} object(s) - placed in their original layout when dropped", "{0} 个对象 · 放下后按原布局摆放"),
 				FText::AsNumber(Assets.Num())),
 			DragOperation->GetIcon());
 	}
@@ -561,7 +562,7 @@ void FXingyiViewportClient::BeginDragOutOfPalette(const TArray<AActor*>& Palette
 
 	if (!OwnerWindow.IsValid())
 	{
-		UE_LOG(LogXingyi, Warning, TEXT("星移：还没找到面板所在的窗口，这次拖拽取消。"));
+		UE_LOG(LogXingyi, Warning, TEXT("Xingyi: the window hosting the panel has not been found yet; cancelling this drag."));
 		return;
 	}
 
@@ -606,7 +607,7 @@ bool FXingyiViewportClient::HandlePaletteClick(const FInputKeyEventArgs& InEvent
 			// 收进来只会让选中计数虚高，拖的时候又被跳过，反而看不懂。
 			if (!HasDraggableAsset(HitActor))
 			{
-				UE_LOG(LogXingyi, Display, TEXT("星移：%s 没有可拖拽的资产，不进选中集。"), *HitActor->GetName());
+				UE_LOG(LogXingyi, Display, TEXT("Xingyi: %s has no draggable asset; not added to the selection."), *HitActor->GetName());
 				return true;
 			}
 
